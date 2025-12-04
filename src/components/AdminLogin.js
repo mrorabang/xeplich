@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import './AdminLogin.css';
 
 const AdminLogin = ({ onLogin }) => {
@@ -19,8 +20,8 @@ const AdminLogin = ({ onLogin }) => {
     setLoading(true);
     setError('');
 
-    // Mật khẩu mặc định (có thể thay đổi)
-    const correctPassword = '9320';
+    // Mật khẩu từ biến môi trường
+    const correctPassword = process.env.REACT_APP_ADMIN_PASSWORD || '9320';
 
     if (password === correctPassword) {
       // Lưu cache login
@@ -55,6 +56,9 @@ const AdminLogin = ({ onLogin }) => {
             {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>
         </form>
+        <div className="back-to-staff">
+          <Link to="/">← Quay về trang đăng ký lịch</Link>
+        </div>
       </div>
     </div>
   );

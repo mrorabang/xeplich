@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration } from '../firebaseService';
+import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek } from '../firebaseService';
 import FinalScheduleTable from './FinalScheduleTable';
 import { useToast } from '../services/ToastService';
 import './AdminPage.css';
@@ -36,7 +36,48 @@ const AdminPage = ({ onLogout }) => {
   };
 
   const handleSaveSettings = async () => {
+    // Kiểm tra khoảng thời gian đủ 7 ngày (tính cả ngày đầu và ngày cuối)
+    if (settings.dateRange.from && settings.dateRange.to) {
+      const fromDate = new Date(settings.dateRange.from);
+      const toDate = new Date(settings.dateRange.to);
+      const diffTime = toDate - fromDate;
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 vì tính cả ngày đầu
+      
+      if (diffDays !== 7) {
+        toast.error(`Khoảng thời gian phải đủ 7 ngày! Hiện tại: ${diffDays} ngày`);
+        return;
+      }
+    } else if (settings.dateRange.from || settings.dateRange.to) {
+      toast.error('Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc!');
+      return;
+    }
+    
     setLoading(true);
+    
+    // Kiểm tra nếu dateRange thay đổi, xóa dữ liệu cũ
+    if (originalSettings && 
+        (settings.dateRange.from !== originalSettings.dateRange.from || 
+         settings.dateRange.to !== originalSettings.dateRange.to)) {
+      
+      const confirmClear = window.confirm(
+        'Bạn đã thay đổi khoảng thời gian. Tất cả đăng ký và lịch chốt cũ sẽ bị xóa. Bạn có chắc chắn?'
+      );
+      
+      if (confirmClear) {
+        // Xóa schedule cũ nếu có
+        if (originalSettings.dateRange.from) {
+          await clearScheduleByWeek(originalSettings.dateRange.from);
+        }
+        // Xóa tất cả registrations
+        await clearAllRegistrations();
+        setRegistrations([]);
+        toast.success('Đã xóa dữ liệu cũ!');
+      } else {
+        setLoading(false);
+        return;
+      }
+    }
+    
     const success = await saveSettings(settings);
     setLoading(false);
     if (success) {
@@ -89,6 +130,18 @@ const AdminPage = ({ onLogout }) => {
   const handleApproveRegistration = async (registrationId) => {
     const registration = registrations.find(reg => reg.id === registrationId);
     if (registration) {
+      // Kiểm tra xem nhân viên đã có lịch được duyệt trong tuần này chưa
+      const existingApproved = registrations.find(reg => 
+        reg.id !== registrationId && 
+        reg.employeeName === registration.employeeName && 
+        reg.approved === true
+      );
+      
+      if (existingApproved) {
+        toast.error(`Nhân viên ${registration.employeeName} đã có lịch làm trong tuần này!`);
+        return;
+      }
+      
       // Tạo shifts từ đăng ký
       const newShifts = registration.shifts.map(s => ({
         date: s.date,

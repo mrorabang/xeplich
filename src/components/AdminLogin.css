@@ -87,6 +87,25 @@
   border: 1px solid #e74c3c;
 }
 
+.back-to-staff {
+  text-align: center;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.back-to-staff a {
+  color: #667eea;
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.3s;
+}
+
+.back-to-staff a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
 @media (max-width: 480px) {
   .login-box {
     margin: 1rem;

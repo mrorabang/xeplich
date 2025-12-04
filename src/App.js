@@ -23,7 +23,7 @@ function App() {
     <ToastProvider>
       <div className="App">
         <Routes>
-          <Route path="/admin" element={
+          <Route path="/xeplich-admin" element={
             isAdmin ? 
             <AdminPage onLogout={handleAdminLogout} /> : 
             <AdminLogin onLogin={handleAdminLogin} />

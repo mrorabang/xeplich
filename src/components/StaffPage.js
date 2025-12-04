@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getSettings, saveRegistration } from '../firebaseService';
+import { sendRegistrationNotification } from '../services/EmailService';
 import { useToast } from '../services/ToastService';
 import './StaffPage.css';
 
 const StaffPage = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [employeeName, setEmployeeName] = useState('');
@@ -140,6 +143,10 @@ const StaffPage = () => {
     const id = await saveRegistration(registration);
     if (id) {
       toast.success('Đăng ký ca làm việc thành công!');
+      
+      // Gửi email thông báo cho admin
+      sendRegistrationNotification(employeeName, selectedShifts);
+      
       // Reset form
       setEmployeeName('');
       initializeShifts();
@@ -176,8 +183,18 @@ const StaffPage = () => {
   return (
     <div className="staff-page">
       <div className="staff-header">
-        <h1>Đăng ký lịch làm việc</h1>
-        <p>Vui lòng đăng ký ca làm việc cho tuần {new Date(settings.dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} đến {new Date(settings.dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}</p>
+        <div className="header-content">
+          <div>
+            <h1>Đăng ký lịch làm việc</h1>
+            <p>Vui lòng đăng ký ca làm việc cho tuần {new Date(settings.dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} đến {new Date(settings.dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}</p>
+          </div>
+          <button 
+            onClick={() => navigate('/xeplich-admin')}
+            className="admin-login-btn"
+          >
+            🔐 Đăng nhập admin
+          </button>
+        </div>
       </div>
 
       <div className="staff-content">

@@ -46,6 +46,31 @@ export const getRegistrations = async () => {
   }
 };
 
+// Xóa tất cả registrations
+export const clearAllRegistrations = async () => {
+  try {
+    const querySnapshot = await getDocs(collection(db, 'registrations'));
+    const deletePromises = querySnapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+    return true;
+  } catch (error) {
+    console.error('Error clearing registrations:', error);
+    return false;
+  }
+};
+
+// Xóa schedule theo tuần
+export const clearScheduleByWeek = async (weekStart) => {
+  try {
+    const docRef = doc(db, 'schedules', weekStart);
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error('Error clearing schedule:', error);
+    return false;
+  }
+};
+
 // Cập nhật trạng thái duyệt của đăng ký
 export const updateRegistrationStatus = async (registrationId, approved) => {
   try {
