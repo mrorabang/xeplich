@@ -1,0 +1,338 @@
+.staff-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #74b9ff 0%, #0984e3 100%);
+}
+
+.loading, .error-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  color: white;
+  text-align: center;
+}
+
+.error-container h2 {
+  font-size: 2rem;
+  margin-bottom: 1rem;
+}
+
+.staff-header {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  padding: 2rem;
+  text-align: center;
+}
+
+.staff-header h1 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+}
+
+.staff-header p {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.staff-content {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+
+.registration-form {
+  background: white;
+  padding: 2rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.form-group {
+  margin-bottom: 2rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.employee-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.employee-select:focus {
+  outline: none;
+  border-color: #0984e3;
+}
+
+.shifts-table {
+  margin-bottom: 2rem;
+}
+
+.shifts-table h3 {
+  color: #333;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.shifts-table table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 1rem;
+}
+
+.shifts-table th,
+.shifts-table td {
+  padding: 1rem;
+  text-align: center;
+  border: 1px solid #ddd;
+}
+
+.shifts-table th {
+  background: #f8f9fa;
+  font-weight: 600;
+  color: #333;
+}
+
+.shifts-table td:first-child {
+  text-align: left;
+  font-weight: 500;
+}
+
+.shifts-table td:first-child small {
+  display: block;
+  color: #666;
+  font-weight: normal;
+}
+
+.checkbox-cell {
+  position: relative;
+}
+
+.checkbox-cell input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.checkbox-cell label {
+  display: block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.selected-shifts {
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+}
+
+.selected-shifts h4 {
+  margin: 0 0 1rem 0;
+  color: #333;
+}
+
+.shifts-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.shift-badge {
+  background: #0984e3;
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: 0.9rem;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #00b894 0%, #00a085 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+}
+
+.error-message {
+  background: #fff5f5;
+  color: #e74c3c;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #e74c3c;
+}
+
+.success-message {
+  background: #f0fff4;
+  color: #27ae60;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  border: 1px solid #27ae60;
+}
+
+@media (max-width: 768px) {
+  .staff-header {
+    padding: 1rem;
+  }
+  
+  .staff-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .staff-header p {
+    font-size: 0.9rem;
+  }
+  
+  .staff-content {
+    margin: 1rem auto;
+    padding: 0 0.5rem;
+  }
+  
+  .registration-form {
+    padding: 1rem;
+    border-radius: 10px;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    font-size: 0.9rem;
+  }
+  
+  .employee-select {
+    padding: 0.6rem;
+    font-size: 0.9rem;
+  }
+  
+  .shifts-table h3 {
+    font-size: 1rem;
+  }
+  
+  .shifts-table table {
+    font-size: 0.8rem;
+  }
+  
+  .shifts-table th,
+  .shifts-table td {
+    padding: 0.4rem;
+  }
+  
+  .checkbox-cell input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .checkbox-cell label {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .selected-shifts {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .selected-shifts h4 {
+    font-size: 0.9rem;
+  }
+  
+  .shift-badge {
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
+  }
+  
+  .submit-btn {
+    padding: 0.8rem;
+    font-size: 1rem;
+  }
+  
+  .error-message,
+  .success-message {
+    padding: 0.75rem;
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .staff-header {
+    padding: 0.75rem;
+  }
+  
+  .staff-header h1 {
+    font-size: 1.3rem;
+  }
+  
+  .staff-header p {
+    font-size: 0.8rem;
+  }
+  
+  .registration-form {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .shifts-table table {
+    font-size: 0.7rem;
+  }
+  
+  .shifts-table th,
+  .shifts-table td {
+    padding: 0.3rem;
+  }
+  
+  .checkbox-cell input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .checkbox-cell label {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .shift-badge {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  .submit-btn {
+    padding: 0.7rem;
+    font-size: 0.9rem;
+  }
+  
+  .error-message,
+  .success-message {
+    padding: 0.6rem;
+    font-size: 0.8rem;
+  }
+}

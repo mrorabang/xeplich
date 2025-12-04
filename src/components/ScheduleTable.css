@@ -1,0 +1,145 @@
+.schedule-table-container {
+  margin-top: 2rem;
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.schedule-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-controls h3 {
+  margin: 0;
+  color: #333;
+}
+
+.refresh-schedule-btn {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: transform 0.2s;
+}
+
+.refresh-schedule-btn:hover {
+  transform: translateY(-2px);
+}
+
+.refresh-schedule-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.week-selector {
+  padding: 0.5rem;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  background: white;
+  cursor: pointer;
+}
+
+.schedule-table-wrapper {
+  overflow-x: auto;
+}
+
+.schedule-matrix {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  font-family: monospace;
+}
+
+.schedule-matrix th,
+.schedule-matrix td {
+  border: 1px solid #333;
+  text-align: center;
+  vertical-align: middle;
+}
+
+.employee-col {
+  background: #2c3e50;
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem;
+  min-width: 120px;
+}
+
+.employee-name {
+  background: #ecf0f1;
+  font-weight: bold;
+  text-align: left;
+  padding: 0.5rem;
+  color: #2c3e50;
+}
+
+.date-col {
+  background: #34495e;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem;
+  border-bottom: 2px solid #333;
+}
+
+.date-col div {
+  font-size: 0.9rem;
+}
+
+.date-col small {
+  display: block;
+  opacity: 0.8;
+  font-size: 0.8rem;
+}
+
+.shift-col {
+  background: #7f8c8d;
+  color: white;
+  font-weight: bold;
+  padding: 0.5rem;
+  min-width: 50px;
+}
+
+.shift-cell {
+  min-width: 50px;
+  height: 35px;
+  font-size: 1.1rem;
+  font-weight: bold;
+  color: #e74c3c;
+  background: #fafafa;
+}
+
+.shift-cell:hover {
+  background: #f0f0f0;
+}
+
+@media (max-width: 768px) {
+  .schedule-table-container {
+    padding: 1rem;
+  }
+  
+  .schedule-controls {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .schedule-matrix {
+    font-size: 0.8rem;
+  }
+  
+  .schedule-matrix th,
+  .schedule-matrix td {
+    padding: 0.3rem;
+    min-width: 40px;
+  }
+  
+  .employee-name {
+    min-width: 80px;
+  }
+}

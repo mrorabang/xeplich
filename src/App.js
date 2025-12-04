@@ -1,24 +1,40 @@
-import logo from './logo.svg';
+import React, { useState } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import AdminLogin from './components/AdminLogin';
+import AdminPage from './components/AdminPage';
+import StaffPage from './components/StaffPage';
+import { ToastProvider } from './services/ToastService';
 import './App.css';
 
 function App() {
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const handleAdminLogin = () => {
+    setIsAdmin(true);
+  };
+
+  const handleAdminLogout = () => {
+    // Xóa cache login
+    localStorage.removeItem('adminAuth');
+    setIsAdmin(false);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <ToastProvider>
+        <div className="App">
+          <Routes>
+            <Route path="/admin" element={
+              isAdmin ? 
+              <AdminPage onLogout={handleAdminLogout} /> : 
+              <AdminLogin onLogin={handleAdminLogin} />
+            } />
+            <Route path="/staff" element={<StaffPage />} />
+            <Route path="/" element={<Navigate to="/staff" replace />} />
+          </Routes>
+        </div>
+      </ToastProvider>
+    </Router>
   );
 }
 
