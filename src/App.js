@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import AdminLogin from './components/AdminLogin';
 import AdminPage from './components/AdminPage';
 import StaffPage from './components/StaffPage';
@@ -20,21 +20,19 @@ function App() {
   };
 
   return (
-    <Router>
-      <ToastProvider>
-        <div className="App">
-          <Routes>
-            <Route path="/admin" element={
-              isAdmin ? 
-              <AdminPage onLogout={handleAdminLogout} /> : 
-              <AdminLogin onLogin={handleAdminLogin} />
-            } />
-            <Route path="/staff" element={<StaffPage />} />
-            <Route path="/" element={<Navigate to="/staff" replace />} />
-          </Routes>
-        </div>
-      </ToastProvider>
-    </Router>
+    <ToastProvider>
+      <div className="App">
+        <Routes>
+          <Route path="/admin" element={
+            isAdmin ? 
+            <AdminPage onLogout={handleAdminLogout} /> : 
+            <AdminLogin onLogin={handleAdminLogin} />
+          } />
+          <Route path="/" element={<StaffPage />} />
+          <Route path="/staff" element={<StaffPage />} />
+        </Routes>
+      </div>
+    </ToastProvider>
   );
 }
 
