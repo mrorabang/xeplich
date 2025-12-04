@@ -1,0 +1,15 @@
+{
+  "files": {
+    "main.css": "/xeplich/static/css/main.9e31d00e.css",
+    "main.js": "/xeplich/static/js/main.9d111de6.js",
+    "static/js/453.f58899e9.chunk.js": "/xeplich/static/js/453.f58899e9.chunk.js",
+    "index.html": "/xeplich/index.html",
+    "main.9e31d00e.css.map": "/xeplich/static/css/main.9e31d00e.css.map",
+    "main.9d111de6.js.map": "/xeplich/static/js/main.9d111de6.js.map",
+    "453.f58899e9.chunk.js.map": "/xeplich/static/js/453.f58899e9.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.9e31d00e.css",
+    "static/js/main.9d111de6.js"
+  ]
+}
