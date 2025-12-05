@@ -187,7 +187,7 @@ const FinalScheduleTable = ({ registrations, dateRange, scheduleData }) => {
       <div className="schedule-header">
         <h3>Lịch chốt ({scheduleToUse.length} nhân viên)</h3>
         <button onClick={handleExportPNG} className="export-png-btn">
-          📷 Xuất PNG
+           Xuất PNG
         </button>
       </div>
       <div className="final-table-wrapper" ref={tableRef}>
@@ -198,7 +198,7 @@ const FinalScheduleTable = ({ registrations, dateRange, scheduleData }) => {
         <div className="schedule-header">
           <h3>Lịch chốt - Thời gian làm việc</h3>
           <button onClick={handleExportTimePNG} className="export-png-btn">
-            📷 Xuất PNG
+             Xuất PNG
           </button>
         </div>
         <div className="final-table-wrapper" ref={timeTableRef}>

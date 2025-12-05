@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek } from '../firebaseService';
-import FinalScheduleTable from './FinalScheduleTable';
 import { useToast } from '../services/ToastService';
+import AutoShiftService from '../services/AutoShiftService';
+import ShiftWarningService from '../services/ShiftWarningService';
+import FinalScheduleTable from './FinalScheduleTable';
 import './AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
@@ -18,11 +20,16 @@ const AdminPage = ({ onLogout }) => {
   const [loading, setLoading] = useState(false);
   const [refreshLoading, setRefreshLoading] = useState(false);
   const [originalSettings, setOriginalSettings] = useState(null);
+  const [shiftWarnings, setShiftWarnings] = useState({ hasWarnings: false, warnings: [] });
 
   useEffect(() => {
     loadSettings();
     loadRegistrations();
   }, []);
+
+  useEffect(() => {
+    checkShiftWarnings();
+  }, [registrations]);
 
   const loadSettings = async () => {
     const data = await getSettings();
@@ -35,6 +42,15 @@ const AdminPage = ({ onLogout }) => {
   const loadRegistrations = async () => {
     const data = await getRegistrations();
     setRegistrations(data);
+  };
+
+  const checkShiftWarnings = async () => {
+    try {
+      const warnings = await ShiftWarningService.checkShiftGaps();
+      setShiftWarnings(warnings);
+    } catch (error) {
+      console.error('Error checking shift warnings:', error);
+    }
   };
 
   const handleSaveSettings = async () => {
@@ -56,21 +72,17 @@ const AdminPage = ({ onLogout }) => {
     
     setLoading(true);
     
-    // Kiểm tra nếu dateRange thay đổi, xóa dữ liệu cũ
+    // Kiểm tra nếu dateRange thay đổi, xóa đăng ký cũ (giữ lại lịch chốt cũ)
     if (originalSettings && 
         (settings.dateRange.from !== originalSettings.dateRange.from || 
          settings.dateRange.to !== originalSettings.dateRange.to)) {
       
       const confirmClear = window.confirm(
-        'Bạn đã thay đổi khoảng thời gian. Tất cả đăng ký và lịch chốt cũ sẽ bị xóa. Bạn có chắc chắn?'
+        'Bạn đã thay đổi khoảng thời gian. Tất cả đăng ký ca của tuần cũ sẽ bị xóa, nhưng lịch chốt cũ vẫn được giữ trong lịch sử. Bạn có chắc chắn?'
       );
       
       if (confirmClear) {
-        // Xóa schedule cũ nếu có
-        if (originalSettings.dateRange.from) {
-          await clearScheduleByWeek(originalSettings.dateRange.from);
-        }
-        // Xóa tất cả registrations
+        // Chỉ xóa tất cả registrations của tuần cũ, giữ lại lịch chốt cũ
         await clearAllRegistrations();
         setRegistrations([]);
         toast.success('Đã xóa dữ liệu cũ!');
@@ -129,52 +141,71 @@ const AdminPage = ({ onLogout }) => {
     }
   };
 
-  const handleApproveRegistration = async (registrationId) => {
-    const registration = registrations.find(reg => reg.id === registrationId);
-    if (registration) {
-      // Kiểm tra xem nhân viên đã có lịch được duyệt trong tuần này chưa
-      const existingApproved = registrations.find(reg => 
-        reg.id !== registrationId && 
-        reg.employeeName === registration.employeeName && 
-        reg.approved === true
-      );
+  const handleAutoAllocate = async () => {
+    if (registrations.length === 0) {
+      toast.warning('Không có đăng ký nào để phân bổ!');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const result = await AutoShiftService.autoAllocateShifts();
       
-      if (existingApproved) {
-        toast.error(`Nhân viên ${registration.employeeName} đã có lịch làm trong tuần này!`);
-        return;
+      if (result.success) {
+        // Tải lại danh sách đăng ký
+        await loadRegistrations();
+
+        // Kiểm tra lại các ca còn thiếu sau khi phân bổ
+        await checkShiftWarnings();
+
+        toast.success(result.message || `Đã phân bổ thành công ${result.allocatedCount} nhân viên!`);
+        
+        // Tạo lịch chốt nếu thành công
+        if (result.allocatedCount > 0) {
+          await createScheduleFromAllocations();
+        }
+      } else {
+        toast.error('Lỗi khi phân bổ ca: ' + result.error);
       }
+    } catch (error) {
+      console.error('Error in auto allocation:', error);
+      toast.error('Lỗi khi phân bổ ca!');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const createScheduleFromAllocations = async () => {
+    try {
+      // Lấy tất cả registrations đã được allocated
+      const allRegistrations = await getRegistrations();
+      const allocatedRegistrations = allRegistrations.filter(reg => reg.allocated);
       
-      // Tạo shifts từ đăng ký
-      const newShifts = registration.shifts.map(s => ({
-        date: s.date,
-        shift: s.shift,
-        employees: [registration.employeeName]
-      }));
-      
-      // Kiểm tra conflict trước khi duyệt
-      const conflictCheck = await checkShiftConflict(settings.dateRange.from, newShifts);
-      
-      if (conflictCheck.hasConflict) {
-        // Hiển thị toast chi tiết về conflict
-        let conflictMessage = 'Không thể duyệt vì vượt quá số lượng người cho phép:\n\n';
-        conflictCheck.conflicts.forEach(conflict => {
-          const dateStr = new Date(conflict.date).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'});
-          conflictMessage += `Ngày ${dateStr} - Ca ${conflict.shift}: ${conflict.current}/${conflict.max} người\n`;
+      if (allocatedRegistrations.length === 0) return;
+
+      // Tạo schedule data từ allocations
+      const scheduleData = [];
+      allocatedRegistrations.forEach(reg => {
+        scheduleData.push({
+          id: reg.id,
+          employeeName: reg.employeeName,
+          shifts: reg.shifts
         });
-        toast.error(conflictMessage);
-        return;
-      }
-      
-      // Lưu vào Firebase (gộp với schedule hiện có)
-      const success = await saveScheduleByWeek(settings.dateRange.from, newShifts);
+      });
+
+      // Lưu schedule
+      const success = await saveScheduleByWeek(settings.dateRange.from, scheduleData);
       if (success) {
-        // Cập nhật trạng thái đã duyệt trên Firebase
-        await updateRegistrationStatus(registrationId, true);
-        // Cập nhật state local
-        setRegistrations(prev => prev.map(reg => 
-          reg.id === registrationId ? { ...reg, approved: true } : reg
-        ));
+        toast.success('Đã tạo lịch chốt thành công!');
+        
+        // Reload lại trang để hiển thị schedule table
+        setTimeout(() => {
+          window.location.reload();
+        }, 1500);
       }
+    } catch (error) {
+      console.error('Error creating schedule:', error);
+      toast.error('Lỗi khi tạo lịch chốt!');
     }
   };
 
@@ -189,13 +220,26 @@ const AdminPage = ({ onLogout }) => {
     <div className="admin-page">
       <div className="admin-header">
         <h1>Admin Page - Quản lý lịch làm việc</h1>
-        <div className="header-actions">
-          <button onClick={() => navigate('/shift-allocation')} className="allocation-btn">
-            🤖 Phân bổ ca
-          </button>
-          <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
-        </div>
+        <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
       </div>
+
+      {shiftWarnings.hasWarnings && (
+        <div className="shift-warning-card">
+          <h2>Cảnh báo thiếu ca làm việc</h2>
+          <p className="shift-warning-summary">
+            Hiện tại còn <strong>{shiftWarnings.totalMissing}</strong> slot ca làm chưa đủ người.
+          </p>
+          <ul className="shift-warning-list">
+            {shiftWarnings.warnings.map((w, idx) => (
+              <li key={idx}>
+                <span className="warning-date">{w.dateDisplay}</span>
+                <span className="warning-shift">Ca {w.shiftType}</span>
+                <span className="warning-text">Thiếu {w.missing} người ({w.current}/{w.limit})</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="admin-content">
         <div className="settings-section">
@@ -278,59 +322,52 @@ const AdminPage = ({ onLogout }) => {
         <div className="registrations-section">
           <div className="registrations-header">
             <h2>Đăng ký của nhân viên ({registrations.length})</h2>
-            <button 
-              onClick={handleRefreshRegistrations} 
-              className="refresh-registrations-btn"
-              disabled={refreshLoading}
-            >
-              {refreshLoading ? 'Đang tải...' : 'Refresh'}
-            </button>
-          </div>
-          <div className="registrations-list">
-            {registrations.map(reg => {
-              const isApproved = reg.approved === true;
-              return (
-                <div key={reg.id} className={`registration-item ${isApproved ? 'approved' : ''}`}>
-                  <div className="registration-info">
-                    <h4>{reg.employeeName}</h4>
-                    <p>Đăng ký {reg.shifts.length} ca</p>
-                    <div className="shifts-detail">
-                      {reg.shifts.map((shift, index) => {
-                        const date = new Date(shift.date);
-                        const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-                        const dayName = dayNames[date.getDay()];
-                        return (
-                          <span key={index} className="shift-badge">
-                            {dayName} - Ca {shift.shift}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-                  <div className="registration-actions">
-                    <button 
-                      onClick={() => handleApproveRegistration(reg.id)}
-                      className="approve-btn"
-                      disabled={isApproved}
-                    >
-                      {isApproved ? 'Đã duyệt' : 'Duyệt'}
-                    </button>
-                    {!isApproved && (
-                      <button 
-                        onClick={() => handleDeleteRegistration(reg.id)}
-                        className="delete-btn"
-                      >
-                        Xóa
-                      </button>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            <div className="header-actions">
+              <button 
+                onClick={handleAutoAllocate}
+                className="auto-allocate-btn"
+                disabled={loading}
+              >
+                {loading ? 'Đang phân bổ...' : 'Phân bổ ca tự động'}
+              </button>
+              <button 
+                onClick={handleRefreshRegistrations} 
+                className="refresh-registrations-btn"
+                disabled={refreshLoading}
+              >
+                {refreshLoading ? 'Đang tải...' : 'Refresh'}
+              </button>
+            </div>
           </div>
           
-          {/* Bảng lịch chốt */}
-          <FinalScheduleTable registrations={registrations} dateRange={settings.dateRange} />
+          <div className="registrations-list">
+            {registrations.map(reg => (
+              <div key={reg.id} className="registration-item approved">
+                <div className="registration-info">
+                  <div className="employee-header">
+                    <h4>{reg.employeeName} (Đăng ký {reg.shifts.length} ca)</h4>
+                  </div>
+                  <div className="shifts-detail">
+                    {reg.shifts.map((shift, index) => {
+                      const date = new Date(shift.date);
+                      const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                      const dayName = dayNames[date.getDay()];
+                      return (
+                        <span key={index} className={`shift-badge shift-${shift.shift}`}>
+                          {dayName} - Ca {shift.shift}
+                        </span>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Bảng lịch chốt - chỉ hiển thị sau khi phân bổ */}
+          {registrations.some(reg => reg.allocated) && (
+            <FinalScheduleTable registrations={registrations.filter(reg => reg.allocated)} dateRange={settings.dateRange} />
+          )}
         </div>
       </div>
     </div>

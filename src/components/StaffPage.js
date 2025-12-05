@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSettings, saveRegistration } from '../firebaseService';
+import { getSettings, saveRegistration, getRegistrations } from '../firebaseService';
 import { sendRegistrationNotification } from '../services/EmailService';
 import { useToast } from '../services/ToastService';
 import './StaffPage.css';
@@ -14,10 +14,28 @@ const StaffPage = () => {
   const [shifts, setShifts] = useState({});
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [registeredEmployees, setRegisteredEmployees] = useState([]);
 
   useEffect(() => {
     checkActiveStatus();
   }, []);
+
+  useEffect(() => {
+    if (settings) {
+      loadRegisteredEmployees();
+      initializeShifts();
+    }
+  }, [settings]);
+
+  const loadRegisteredEmployees = async () => {
+    try {
+      const registrations = await getRegistrations();
+      const employees = registrations.map(reg => reg.employeeName);
+      setRegisteredEmployees(employees);
+    } catch (error) {
+      console.error('Error loading registered employees:', error);
+    }
+  };
 
   const checkActiveStatus = async () => {
     const data = await getSettings();
@@ -137,7 +155,8 @@ const StaffPage = () => {
     const registration = {
       employeeName,
       shifts: selectedShifts,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      approved: true  // Tự động approved khi đăng ký
     };
     
     const id = await saveRegistration(registration);
@@ -175,6 +194,12 @@ const StaffPage = () => {
         <div className="error-container">
           <h2>Staff Page không khả dụng</h2>
           <p>{error}</p>
+          <button 
+            onClick={() => navigate('/xeplich-admin')}
+            className="admin-login-link"
+          >
+            Đăng nhập admin
+          </button>
         </div>
       </div>
     );
@@ -232,9 +257,15 @@ const StaffPage = () => {
               required
               className="employee-select"
             >
-              <option value="">-- Chọn nhân viên --</option>
+              <option value="">Chọn nhân viên</option>
               {settings.employees.map((emp, index) => (
-                <option key={index} value={emp}>{emp}</option>
+                <option 
+                  key={index} 
+                  value={emp}
+                  disabled={registeredEmployees.includes(emp)}
+                >
+                  {emp} {registeredEmployees.includes(emp) ? '(Đã đăng ký)' : ''}
+                </option>
               ))}
             </select>
           </div>
