@@ -42,13 +42,13 @@
 }
 
 .final-table-wrapper {
-  overflow-x: auto;
+  overflow-x: hidden;
 }
 
 .final-schedule-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 800px;
+  table-layout: fixed;
 }
 
 .final-schedule-table th,
@@ -63,7 +63,7 @@
   color: white;
   font-weight: bold;
   padding: 0.75rem;
-  min-width: 120px;
+  width: 15%;
 }
 
 .final-schedule-table .employee-name {
@@ -79,6 +79,7 @@
   color: white;
   font-weight: bold;
   padding: 0.5rem;
+  width: 12.14%;
 }
 
 .final-schedule-table .date-col div {
@@ -96,11 +97,11 @@
   color: white;
   font-weight: bold;
   padding: 0.5rem;
-  min-width: 40px;
+  width: 4.05%;
 }
 
 .final-schedule-table .shift-cell {
-  min-width: 40px;
+  width: 4.05%;
   height: 35px;
   font-size: 1.1rem;
   font-weight: bold;
@@ -159,19 +160,20 @@
   }
   
   .final-table-wrapper {
-    margin: 0 -0.75rem;
-    padding: 0 0.75rem;
-    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
   
   .final-schedule-table {
-    min-width: 400px;
+    width: 100%;
     font-size: 0.65rem;
+    table-layout: fixed;
   }
   
   .final-schedule-table .employee-col {
     padding: 0.3rem;
-    min-width: 60px;
+    width: 20%;
   }
   
   .final-schedule-table .employee-name {
@@ -182,6 +184,7 @@
   .final-schedule-table .date-col {
     padding: 0.25rem;
     font-size: 0.65rem;
+    width: 11.43%;
   }
   
   .final-schedule-table .date-col div {
@@ -194,11 +197,11 @@
   
   .final-schedule-table .shift-col {
     padding: 0.2rem;
-    min-width: 20px;
+    width: 3.81%;
   }
   
   .final-schedule-table .shift-cell {
-    min-width: 20px;
+    width: 3.81%;
     height: 20px;
     font-size: 0.8rem;
   }
@@ -244,19 +247,20 @@
   }
   
   .final-table-wrapper {
-    margin: 0 -0.5rem;
-    padding: 0 0.5rem;
-    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
   }
   
   .final-schedule-table {
-    min-width: 320px;
+    width: 100%;
     font-size: 0.55rem;
+    table-layout: fixed;
   }
   
   .final-schedule-table .employee-col {
     padding: 0.2rem;
-    min-width: 45px;
+    width: 25%;
     font-size: 0.55rem;
   }
   
@@ -268,6 +272,7 @@
   .final-schedule-table .date-col {
     padding: 0.2rem;
     font-size: 0.55rem;
+    width: 10.71%;
   }
   
   .final-schedule-table .date-col div {
@@ -280,12 +285,12 @@
   
   .final-schedule-table .shift-col {
     padding: 0.15rem;
-    min-width: 16px;
+    width: 3.57%;
     font-size: 0.55rem;
   }
   
   .final-schedule-table .shift-cell {
-    min-width: 16px;
+    width: 3.57%;
     height: 16px;
     font-size: 0.7rem;
   }

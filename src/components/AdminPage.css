@@ -1,6 +1,7 @@
 .admin-page {
   min-height: 100vh;
   background: #f5f5f5;
+  overflow-x: hidden;
 }
 
 .admin-header {
@@ -15,6 +16,30 @@
 .admin-header h1 {
   margin: 0;
   font-size: 1.5rem;
+}
+
+.header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.allocation-btn {
+  background: rgba(255, 255, 255, 0.9);
+  color: #667eea;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.allocation-btn:hover {
+  background: white;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
 }
 
 .logout-btn {
@@ -33,18 +58,33 @@
 
 .admin-content {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 3fr 7fr;
   gap: 2rem;
   padding: 2rem;
   max-width: 1200px;
-  margin: 0 auto;
+  margin: 2rem auto;
+  width: 100%;
+  box-sizing: border-box;
+  align-items: start;
 }
 
-.settings-section, .registrations-section {
+.settings-section {
   background: white;
   padding: 1.5rem;
   border-radius: 10px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.registrations-section {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .settings-section h2, .registrations-section h2 {
@@ -99,11 +139,59 @@
   font-weight: 500;
 }
 
+.date-range-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .setting-group input[type="date"] {
-  padding: 0.5rem;
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  background: white;
+  cursor: pointer;
+}
+
+.setting-group input[type="date"]:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.setting-group input[type="date"]:hover {
+  border-color: #667eea;
+}
+
+.date-range-display {
+  position: relative;
+  display: inline-block;
+  font-weight: 500;
+}
+
+.date-range-row input[type="date"] {
+  flex: 1;
+  min-width: 0;
+  padding: 0.6rem 0.75rem;
   border: 2px solid #ddd;
-  border-radius: 5px;
-  margin: 0 0.5rem;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: border-color 0.3s;
+}
+
+.date-range-row input[type="date"]:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.date-separator {
+  color: #667eea;
+  font-weight: 600;
+  font-size: 1rem;
+  white-space: nowrap;
 }
 
 .setting-group input[type="checkbox"] {
@@ -184,6 +272,17 @@
   border-radius: 5px;
 }
 
+.employee-item span {
+  order: 1;
+  text-align: left;
+  flex: 1;
+}
+
+.employee-item button {
+  order: 2;
+  margin-left: 0.5rem;
+}
+
 .employee-item button {
   background: #e74c3c;
   color: white;
@@ -219,6 +318,26 @@
   opacity: 0.5;
   cursor: not-allowed;
   background: #ccc;
+}
+
+.history-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  text-align: center;
+  display: block;
+}
+
+.history-btn:hover {
+  transform: translateY(-2px);
 }
 
 .refresh-btn {
@@ -352,6 +471,45 @@
     grid-template-columns: 1fr;
     padding: 1rem;
     gap: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
+  }
+  
+  .employee-input {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .employee-input input {
+    width: 100%;
+  }
+  
+  .employee-input button {
+    width: 100%;
+    padding: 0.6rem;
+  }
+  
+  .employee-list {
+    max-height: 150px;
+  }
+  
+  .employee-item {
+    padding: 0.4rem;
+    font-size: 0.9rem;
+  }
+  
+  .employee-item span {
+    order: 1;
+    text-align: left;
+    flex: 1;
+  }
+  
+  .employee-item button {
+    order: 2;
+    margin-left: 0.5rem;
+    padding: 0.2rem 0.4rem;
+    font-size: 0.8rem;
   }
   
   .admin-header {
@@ -418,9 +576,20 @@
     margin-right: 0;
   }
   
-  .setting-group input[type="date"] {
-    width: 100%;
-    margin: 0.25rem 0;
+  .date-range-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .date-range-row input[type="date"] {
+    flex: 1 1 40%;
+    min-width: 120px;
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .date-separator {
+    font-size: 0.9rem;
   }
   
   .toggle-label {
@@ -449,6 +618,9 @@
   
   .admin-content {
     padding: 0.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    align-items: stretch;
   }
   
   .settings-section, .registrations-section {
@@ -487,12 +659,31 @@
   }
   
   .employee-item {
-    padding: 0.4rem;
-    font-size: 0.85rem;
+    padding: 0.3rem;
+    font-size: 0.8rem;
+  }
+  
+  .employee-item span {
+    order: 1;
+    text-align: left;
+    flex: 1;
   }
   
   .employee-item button {
-    font-size: 0.7rem;
-    padding: 0.2rem 0.4rem;
+    order: 2;
+    margin-left: 0.3rem;
+    padding: 0.3rem;
+    font-size: 0.75rem;
+  }
+  
+  .date-range-row input[type="date"] {
+    flex: 1 1 35%;
+    min-width: 100px;
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+  
+  .date-separator {
+    font-size: 0.8rem;
   }
 }

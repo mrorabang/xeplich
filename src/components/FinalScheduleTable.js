@@ -2,12 +2,18 @@ import React, { useRef } from 'react';
 import html2canvas from 'html2canvas';
 import './FinalScheduleTable.css';
 
-const FinalScheduleTable = ({ registrations, dateRange }) => {
+const FinalScheduleTable = ({ registrations, dateRange, scheduleData }) => {
   const tableRef = useRef();
   const timeTableRef = useRef();
   
-  // Lọc các đăng ký đã duyệt
+  // Sử dụng scheduleData từ Firebase nếu có, nếu không thì tính từ registrations
+  const useScheduleData = scheduleData && scheduleData.length > 0;
   const approvedRegistrations = registrations.filter(reg => reg.approved === true);
+  const scheduleToUse = useScheduleData ? scheduleData : approvedRegistrations.map(reg => ({
+    id: reg.id,
+    employeeName: reg.employeeName,
+    shifts: reg.shifts
+  }));
 
   const getDayName = (dateStr) => {
     const date = new Date(dateStr);
@@ -52,7 +58,7 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
           </tr>
         </thead>
         <tbody>
-          {approvedRegistrations.map(reg => (
+          {scheduleToUse.map(reg => (
             <tr key={reg.id}>
               <td className="employee-name">{reg.employeeName}</td>
               {dates.map(date => (
@@ -94,7 +100,7 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
           </tr>
         </thead>
         <tbody>
-          {approvedRegistrations.map(reg => (
+          {scheduleToUse.map(reg => (
             <tr key={reg.id}>
               <td className="employee-name">{reg.employeeName}</td>
               {dates.map(date => {
@@ -119,9 +125,15 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
     try {
       const canvas = await html2canvas(tableRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 5,
         logging: false,
-        useCORS: true
+        useCORS: true,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: tableRef.current.scrollWidth,
+        height: tableRef.current.scrollHeight
       });
       
       const link = document.createElement('a');
@@ -140,9 +152,15 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
     try {
       const canvas = await html2canvas(timeTableRef.current, {
         backgroundColor: '#ffffff',
-        scale: 2,
+        scale: 5,
         logging: false,
-        useCORS: true
+        useCORS: true,
+        allowTaint: false,
+        foreignObjectRendering: false,
+        scrollX: 0,
+        scrollY: 0,
+        width: timeTableRef.current.scrollWidth,
+        height: timeTableRef.current.scrollHeight
       });
       
       const link = document.createElement('a');
@@ -155,11 +173,11 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
     }
   };
 
-  if (approvedRegistrations.length === 0) {
+  if (scheduleToUse.length === 0) {
     return (
       <div className="final-schedule-container">
         <h3>Lịch chốt</h3>
-        <p className="no-data">Chưa có nhân viên nào được duyệt</p>
+        <p className="no-data">{useScheduleData ? 'Không có dữ liệu lịch chốt' : 'Chưa có nhân viên nào được duyệt'}</p>
       </div>
     );
   }
@@ -167,7 +185,7 @@ const FinalScheduleTable = ({ registrations, dateRange }) => {
   return (
     <div className="final-schedule-container">
       <div className="schedule-header">
-        <h3>Lịch chốt ({approvedRegistrations.length} nhân viên)</h3>
+        <h3>Lịch chốt ({scheduleToUse.length} nhân viên)</h3>
         <button onClick={handleExportPNG} className="export-png-btn">
           📷 Xuất PNG
         </button>

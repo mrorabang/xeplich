@@ -3,6 +3,8 @@ import { Routes, Route } from 'react-router-dom';
 import AdminLogin from './components/AdminLogin';
 import AdminPage from './components/AdminPage';
 import StaffPage from './components/StaffPage';
+import ScheduleHistory from './components/ScheduleHistory';
+import ShiftAllocationManager from './components/ShiftAllocationManager';
 import { ToastProvider } from './services/ToastService';
 import './App.css';
 
@@ -30,6 +32,8 @@ function App() {
           } />
           <Route path="/" element={<StaffPage />} />
           <Route path="/staff" element={<StaffPage />} />
+          <Route path="/schedule-history" element={<ScheduleHistory/>} />
+          <Route path="/shift-allocation" element={<ShiftAllocationManager/>} />
         </Routes>
       </div>
     </ToastProvider>

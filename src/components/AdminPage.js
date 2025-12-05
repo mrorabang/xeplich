@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek } from '../firebaseService';
 import FinalScheduleTable from './FinalScheduleTable';
 import { useToast } from '../services/ToastService';
@@ -6,6 +7,7 @@ import './AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [settings, setSettings] = useState({
     isActive: false,
     dateRange: { from: '', to: '' },
@@ -187,7 +189,12 @@ const AdminPage = ({ onLogout }) => {
     <div className="admin-page">
       <div className="admin-header">
         <h1>Admin Page - Quản lý lịch làm việc</h1>
-        <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
+        <div className="header-actions">
+          <button onClick={() => navigate('/shift-allocation')} className="allocation-btn">
+            🤖 Phân bổ ca
+          </button>
+          <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
+        </div>
       </div>
 
       <div className="admin-content">
@@ -207,24 +214,34 @@ const AdminPage = ({ onLogout }) => {
           </div>
 
           <div className="setting-group">
-            <label>Chọn ngày:</label>
+            <label>Chọn ngày bắt đầu (Thứ 2):</label>
             <input
               type="date"
               value={settings.dateRange.from}
-              onChange={(e) => setSettings(prev => ({ 
-                ...prev, 
-                dateRange: { ...prev.dateRange, from: e.target.value }
-              }))}
+              onChange={(e) => {
+                const selectedDate = new Date(e.target.value);
+                // Kiểm tra xem có phải thứ 2 không
+                if (selectedDate.getDay() !== 1) {
+                  toast.error('Bắt buôc chọn ngày Thứ 2!');
+                  return;
+                }
+                // Tự động tính ngày Chủ nhật (thứ 2 + 6 ngày)
+                const toDate = new Date(selectedDate);
+                toDate.setDate(selectedDate.getDate() + 6);
+                setSettings(prev => ({ 
+                  ...prev, 
+                  dateRange: { 
+                    from: e.target.value,
+                    to: toDate.toISOString().split('T')[0]
+                  }
+                }));
+              }}
             />
-            <span>đến</span>
-            <input
-              type="date"
-              value={settings.dateRange.to}
-              onChange={(e) => setSettings(prev => ({ 
-                ...prev, 
-                dateRange: { ...prev.dateRange, to: e.target.value }
-              }))}
-            />
+            {settings.dateRange.from && (
+              <p className="date-range-display" style={{marginTop: '0.5rem', fontSize: '0.9rem', color: '#666'}}>
+                Từ {String(new Date(settings.dateRange.from).getDate()).padStart(2, '0')}/{String(new Date(settings.dateRange.from).getMonth() + 1).padStart(2, '0')} - {String(new Date(settings.dateRange.to).getDate()).padStart(2, '0')}/{String(new Date(settings.dateRange.to).getMonth() + 1).padStart(2, '0')}
+              </p>
+            )}
           </div>
 
           <div className="setting-group">
@@ -243,7 +260,7 @@ const AdminPage = ({ onLogout }) => {
               {settings.employees.map((emp, index) => (
                 <div key={index} className="employee-item">
                   <span>{emp}</span>
-                  <button onClick={() => handleRemoveEmployee(index)}>Xóa</button>
+                  <button onClick={() => handleRemoveEmployee(index)}>x</button>
                 </div>
               ))}
             </div>
@@ -251,6 +268,10 @@ const AdminPage = ({ onLogout }) => {
 
           <button onClick={handleSaveSettings} disabled={loading || !hasChanges()} className={`save-btn ${hasChanges() ? '' : 'disabled'}`}>
             {loading ? 'Đang lưu...' : 'Lưu cài đặt'}
+          </button>
+          
+          <button onClick={() => navigate('/schedule-history')} className="history-btn">
+            Lịch sử lịch làm
           </button>
         </div>
 
@@ -262,7 +283,7 @@ const AdminPage = ({ onLogout }) => {
               className="refresh-registrations-btn"
               disabled={refreshLoading}
             >
-              {refreshLoading ? 'Đang tải...' : '🔄 Refresh'}
+              {refreshLoading ? 'Đang tải...' : 'Refresh'}
             </button>
           </div>
           <div className="registrations-list">
@@ -274,11 +295,16 @@ const AdminPage = ({ onLogout }) => {
                     <h4>{reg.employeeName}</h4>
                     <p>Đăng ký {reg.shifts.length} ca</p>
                     <div className="shifts-detail">
-                      {reg.shifts.map((shift, index) => (
-                        <span key={index} className="shift-badge">
-                          {new Date(shift.date).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} - Ca {shift.shift}
-                        </span>
-                      ))}
+                      {reg.shifts.map((shift, index) => {
+                        const date = new Date(shift.date);
+                        const dayNames = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+                        const dayName = dayNames[date.getDay()];
+                        return (
+                          <span key={index} className="shift-badge">
+                            {dayName} - Ca {shift.shift}
+                          </span>
+                        );
+                      })}
                     </div>
                   </div>
                   <div className="registration-actions">

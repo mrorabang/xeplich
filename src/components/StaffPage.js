@@ -186,18 +186,42 @@ const StaffPage = () => {
         <div className="header-content">
           <div>
             <h1>Đăng ký lịch làm việc</h1>
-            <p>Vui lòng đăng ký ca làm việc cho tuần {new Date(settings.dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} đến {new Date(settings.dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}</p>
           </div>
           <button 
             onClick={() => navigate('/xeplich-admin')}
             className="admin-login-btn"
           >
-            🔐 Đăng nhập admin
+            Đăng nhập admin
           </button>
         </div>
       </div>
 
       <div className="staff-content">
+        <div className="date-range-banner">
+          <div className="date-range-content">
+            <span className="date-range-label">Tuần đăng ký</span>
+            <span className="date-range-dates">
+              {new Date(settings.dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} 
+              <span className="date-range-separator">→</span> 
+              {new Date(settings.dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}
+            </span>
+            <div className="shift-times-info">
+              <div className="shift-time-item">
+                <span className="shift-label">Ca sáng:</span>
+                <span className="shift-time">6h30-12h30</span>
+              </div>
+              <div className="shift-time-item">
+                <span className="shift-label">Ca chiều:</span>
+                <span className="shift-time">12h30-17h30</span>
+              </div>
+              <div className="shift-time-item">
+                <span className="shift-label">Ca tối:</span>
+                <span className="shift-time">17h30-22h30</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="registration-form">
           <div className="form-group">
             <label htmlFor="employeeName">Tên nhân viên:</label>
@@ -259,19 +283,21 @@ const StaffPage = () => {
           {error && <div className="error-message">{error}</div>}
           {success && <div className="success-message">{success}</div>}
 
-          <div className="selected-shifts">
-            <h4>Ca đã chọn ({Object.keys(shifts).filter(key => shifts[key]).length} ca):</h4>
-            <div className="shifts-list">
-              {Object.keys(shifts).filter(key => shifts[key]).map(key => {
-                const [date, shift] = key.split('_');
-                return (
-                  <span key={key} className="shift-badge">
-                    {getDayName(date)} - Ca {shift}
-                  </span>
-                );
-              })}
+          {Object.keys(shifts).filter(key => shifts[key]).length > 0 && (
+            <div className="selected-shifts">
+              <h4>Ca đã chọn ({Object.keys(shifts).filter(key => shifts[key]).length} ca):</h4>
+              <div className="shifts-list">
+                {Object.keys(shifts).filter(key => shifts[key]).map(key => {
+                  const [date, shift] = key.split('_');
+                  return (
+                    <span key={key} className="shift-badge">
+                      {getDayName(date)} - Ca {shift}
+                    </span>
+                  );
+                })}
+              </div>
             </div>
-          </div>
+          )}
 
           <button type="submit" className="submit-btn">
             Gửi đăng ký

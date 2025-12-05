@@ -216,3 +216,86 @@ export const getSchedules = async () => {
     return [];
   }
 };
+
+// Lấy lịch sử lịch chốt với format phù hợp cho ScheduleHistory
+export const getScheduleHistory = async () => {
+  try {
+    const schedules = await getSchedules();
+    const historyData = [];
+
+    for (const schedule of schedules) {
+      const weekKey = schedule.weekOf;
+      const shifts = schedule.shifts || [];
+
+      // Tính dateRange từ weekOf
+      const startDate = new Date(weekKey);
+      const endDate = new Date(startDate);
+      endDate.setDate(startDate.getDate() + 6);
+
+      const dateRange = {
+        from: weekKey,
+        to: endDate.toISOString().split('T')[0]
+      };
+
+      // Chuyển đổi shifts thành scheduleData format
+      const scheduleData = [];
+      const employeeMap = {};
+
+      shifts.forEach(shift => {
+        shift.employees.forEach(employee => {
+          if (!employeeMap[employee]) {
+            employeeMap[employee] = [];
+          }
+          employeeMap[employee].push({
+            date: shift.date,
+            shift: shift.shift
+          });
+        });
+      });
+
+      // Chuyển employeeMap thành array
+      Object.keys(employeeMap).forEach(employeeName => {
+        scheduleData.push({
+          id: `${weekKey}_${employeeName}`,
+          employeeName: employeeName,
+          shifts: employeeMap[employeeName]
+        });
+      });
+
+      historyData.push({
+        weekKey,
+        dateRange,
+        scheduleData
+      });
+    }
+
+    return historyData;
+  } catch (error) {
+    console.error('Error getting schedule history:', error);
+    return [];
+  }
+};
+
+// Xóa schedule theo weekKey
+export const deleteScheduleByWeek = async (weekKey) => {
+  try {
+    const docRef = doc(db, 'schedules', weekKey);
+    await deleteDoc(docRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting schedule by week:', error);
+    return false;
+  }
+};
+
+// Cập nhật registration
+export const updateRegistration = async (id, data) => {
+  try {
+    const docRef = doc(db, 'registrations', id);
+    await updateDoc(docRef, data);
+    return true;
+  } catch (error) {
+    console.error('Error updating registration:', error);
+    return false;
+  }
+};
