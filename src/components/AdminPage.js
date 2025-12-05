@@ -360,6 +360,14 @@ const AdminPage = ({ onLogout }) => {
                     })}
                   </div>
                 </div>
+                <div className="registration-actions">
+                  <button
+                    className="delete-registration-btn"
+                    onClick={() => handleDeleteRegistration(reg.id)}
+                  >
+                    Xóa
+                  </button>
+                </div>
               </div>
             ))}
           </div>

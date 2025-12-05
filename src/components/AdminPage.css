@@ -406,21 +406,40 @@
   flex-shrink: 0;
 }
 
+.delete-registration-btn {
+  background: #e74c3c;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.delete-registration-btn:hover {
+  background: #c0392b;
+  transform: translateY(-1px);
+}
+
+.delete-registration-btn:active {
+  transform: translateY(0);
+}
+
 .registration-item.approved {
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-  border-left-color: #6c757d;
-  opacity: 0.8;
-  border: 1px solid #dee2e6;
+  background: #ffffff;
+  border-left-color: #667eea;
+  border: 1px solid #e0e0e0;
 }
 
 .registration-item.approved .registration-info h4,
 .registration-item.approved .registration-info p {
-  color: #888;
+  color: #333;
 }
 
 .registration-item.approved .shift-badge {
-  background: #ccc;
-  color: #666;
+  background: #eef2ff;
+  color: #3b4cca;
 }
 
 .registration-info h4 {
