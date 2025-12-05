@@ -140,6 +140,20 @@ const StaffPage = () => {
       setError('Vui lòng chọn tên nhân viên!');
       return;
     }
+
+    // Kiểm tra lại trên server: nhân viên này đã đăng ký tuần này chưa
+    try {
+      const allRegistrations = await getRegistrations();
+      const alreadyRegistered = allRegistrations.some(reg => reg.employeeName === employeeName);
+
+      if (alreadyRegistered) {
+        setError('Bạn đã đăng ký ca cho tuần này, không thể đăng ký lại.');
+        return;
+      }
+    } catch (checkError) {
+      console.error('Error checking existing registration:', checkError);
+      // Nếu lỗi check, vẫn cho tiếp tục nhưng log lại
+    }
     
     if (!validateShifts()) {
       return;
@@ -210,14 +224,14 @@ const StaffPage = () => {
       <div className="staff-header">
         <div className="header-content">
           <div>
-            <h1>Đăng ký lịch làm việc</h1>
-          </div>
-          <button 
+             <button 
             onClick={() => navigate('/xeplich-admin')}
             className="admin-login-btn"
           >
             Đăng nhập admin
           </button>
+          </div>
+         
         </div>
       </div>
 
@@ -334,6 +348,10 @@ const StaffPage = () => {
             Gửi đăng ký
           </button>
         </form>
+      </div>
+
+      <div className="staff-footer">
+        <span>Created by Minh Quân</span>
       </div>
     </div>
   );

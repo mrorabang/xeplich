@@ -148,18 +148,21 @@
 .date-range-row {
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .setting-group input[type="date"] {
   width: 100%;
-  padding: 0.75rem;
+  max-width: 260px;           /* giới hạn chiều ngang trên desktop/tablet */
+  padding: 0.6rem;
   border: 2px solid #e0e0e0;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
   background: white;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .setting-group input[type="date"]:focus {
@@ -179,12 +182,13 @@
 }
 
 .date-range-row input[type="date"] {
-  flex: 1;
-  min-width: 0;
+  flex: 0 0 auto;
+  width: 140px;
+  max-width: 45%;
   padding: 0.6rem 0.75rem;
   border: 2px solid #ddd;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   transition: border-color 0.3s;
 }
 
@@ -264,38 +268,43 @@
 }
 
 .employee-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
   max-height: 200px;
   overflow-y: auto;
 }
 
+
 .employee-item {
-  display: flex;
-  justify-content: space-between;
+  display: inline-flex;
   align-items: center;
-  padding: 0.5rem;
-  background: #f9f9f9;
-  margin-bottom: 0.5rem;
-  border-radius: 5px;
+  padding: 0.25rem 0.55rem;
+  background: #f7f8fc;              /* nền xám xanh rất nhạt, bớt chói */
+  margin: 0;
+  border-radius: 6px;               /* bo góc nhẹ, hình chữ nhật */
+  border: 1px solid #e0e4f0;        /* viền gần giống viền card */
+  gap: 0.35rem;
 }
 
 .employee-item span {
   order: 1;
   text-align: left;
-  flex: 1;
+  font-size: 0.85rem;
+  color: #2c3e50;
 }
 
 .employee-item button {
   order: 2;
-  margin-left: 0.5rem;
-}
-
-.employee-item button {
-  background: #e74c3c;
-  color: white;
-  border: none;
-  padding: 0.25rem 0.5rem;
-  border-radius: 3px;
+  margin-left: 0.2rem;
+  background: #ffffff;
+  color: #e74c3c;
+  border: 1px solid #e0e4f0;   /* border vuông nhỏ */
+  padding: 0.1rem 0.25rem;
+  font-size: 0.8rem;
   cursor: pointer;
+  line-height: 1;
+  border-radius: 4px;          /* bo góc nhẹ cho nút x */
 }
 
 .save-btn, .generate-btn {
@@ -714,10 +723,18 @@
     font-size: 0.7rem;
   }
   
-  .approve-btn, .delete-btn, .refresh-registrations-btn {
-    font-size: 0.7rem;
-    padding: 0.35rem;
+  .approve-btn, .delete-btn, .refresh-registrations-btn,
+  .delete-registration-btn {
+    font-size: 0.85rem;
+    padding: 0.45rem 0.7rem;   /* nút lớn hơn, dễ bấm */
   }
+
+.divider {
+  height: 0;                     /* không cần chiều cao */
+  margin: 1rem 0;
+  border-top: 1px dashed #e0e0e0;
+  border-radius: 999px;          /* nhìn mượt hơn một chút */
+}
   
   .shift-badge {
     font-size: 0.55rem;
@@ -741,9 +758,10 @@
   
   .employee-item button {
     order: 2;
-    margin-left: 0.3rem;
-    padding: 0.3rem;
-    font-size: 0.75rem;
+    margin-left: 0.4rem;
+    padding: 0.45rem 0.6rem;   /* tăng vùng bấm */
+    font-size: 0.9rem;         /* chữ/icon to hơn */
+    border-radius: 6px;
   }
   
   .date-range-row input[type="date"] {

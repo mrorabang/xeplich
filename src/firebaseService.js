@@ -12,6 +12,28 @@ export const saveSettings = async (settings) => {
   }
 };
 
+// Auto shift config (cấu hình phân bổ ca)
+export const saveAutoShiftConfig = async (config) => {
+  try {
+    await setDoc(doc(db, 'settings', 'autoShiftConfig'), config, { merge: true });
+    return true;
+  } catch (error) {
+    console.error('Error saving auto shift config:', error);
+    return false;
+  }
+};
+
+export const getAutoShiftConfig = async () => {
+  try {
+    const docRef = doc(db, 'settings', 'autoShiftConfig');
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  } catch (error) {
+    console.error('Error getting auto shift config:', error);
+    return null;
+  }
+};
+
 export const getSettings = async () => {
   try {
     const docRef = doc(db, 'settings', 'current');

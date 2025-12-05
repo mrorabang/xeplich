@@ -88,6 +88,13 @@
   align-items: center;
 }
 
+.staff-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.8rem;
+  margin-bottom: 1rem;
+}
+
 .registration-form {
   background: white;
   padding: 2rem;
@@ -462,9 +469,10 @@
   .date-range-banner {
     flex-direction: column;
     gap: 0.75rem;
-    padding: 1rem 1.5rem;
-    margin: 0 auto 1.5rem auto;
-    max-width: 90%;
+    padding: 0.9rem 1rem;
+    margin: 0 auto 1rem auto;
+    max-width: 100%;          /* full chiều rộng nội dung */
+    box-sizing: border-box;
   }
   
   .date-range-icon {
@@ -477,9 +485,10 @@
   }
   
   .date-range-dates {
-    font-size: 1.3rem;
-    flex-direction: column;
-    gap: 0.25rem;
+    font-size: 1.2rem;
+    flex-direction: row;   /* from/to trên cùng một dòng */
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
   
   .date-range-separator {
@@ -631,10 +640,11 @@
   }
   
   .date-range-banner {
-    padding: 0.75rem 1rem;
-    margin: 0 auto 1rem auto;
-    gap: 0.5rem;
-    max-width: 95%;
+    padding: 0.6rem 0.75rem;
+    margin: 0 auto 0.8rem auto;
+    gap: 0.4rem;
+    max-width: 100%;          /* chiếm toàn bộ chiều ngang, sát mép card */
+    box-sizing: border-box;
   }
   
   .date-range-icon {
@@ -646,7 +656,11 @@
   }
   
   .date-range-dates {
-    font-size: 1rem;
+    font-size: 0.9rem;        /* chữ ngày nhỏ hơn cho mobile */
+    text-align: center;
+    flex-direction: row;      /* giữ from/to trên cùng dòng */
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   .date-range-separator {

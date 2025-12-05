@@ -1,4 +1,4 @@
-import { getRegistrations, updateRegistration } from '../firebaseService';
+import { getRegistrations, updateRegistration, getAutoShiftConfig } from '../firebaseService';
 
 class AutoShiftService {
   constructor() {
@@ -8,6 +8,10 @@ class AutoShiftService {
       'B': { weekday: 2, weekend: 2 }, // Ca chiều: 2 người cả ngày thường và cuối tuần
       'C': { weekday: 1, weekend: 1 }  // Ca tối: 1 người cả ngày thường và cuối tuần
     };
+
+    // Tùy chọn phân bổ
+    this.prioritizeFairness = true;      // Ưu tiên nhân viên ít ca hơn
+    this.maxShiftsPerEmployee = null;    // Tối đa ca/tuần/nhân viên (null = không giới hạn)
   }
 
   /**
@@ -32,6 +36,27 @@ class AutoShiftService {
    */
   async autoAllocateShifts() {
     try {
+      // Load cấu hình phân bổ ca từ Firestore (nếu có)
+      try {
+        const config = await getAutoShiftConfig();
+        if (config && config.shiftLimits) {
+          this.shiftLimits = {
+            ...this.shiftLimits,
+            ...config.shiftLimits
+          };
+        }
+
+        if (config && typeof config.prioritizeFairness === 'boolean') {
+          this.prioritizeFairness = config.prioritizeFairness;
+        }
+
+        if (config && typeof config.maxShiftsPerEmployee === 'number') {
+          this.maxShiftsPerEmployee = config.maxShiftsPerEmployee;
+        }
+      } catch (cfgErr) {
+        console.error('Error loading auto shift config, dùng default:', cfgErr);
+      }
+
       // Lấy tất cả đăng ký (không cần filter approved nữa)
       const allRegistrations = await getRegistrations();
       
@@ -131,8 +156,20 @@ class AutoShiftService {
       const employeesForShift = this.getEmployeesForShift(allocatedRegistrations, date, shiftType);
       
       if (employeesForShift.length > limit) {
-        // Intelligent chọn employees được giữ lại
-        const selectedEmployees = this.intelligentSelectEmployees(employeesForShift, limit, allocatedRegistrations);
+        let selectedEmployees;
+
+        if (this.prioritizeFairness) {
+          // Intelligent chọn employees được giữ lại (ưu tiên người ít ca, tôn trọng maxShiftsPerEmployee nếu có)
+          selectedEmployees = this.intelligentSelectEmployees(
+            employeesForShift,
+            limit,
+            allocatedRegistrations,
+            this.maxShiftsPerEmployee
+          );
+        } else {
+          // Chỉ random thuần khi không ưu tiên công bằng
+          selectedEmployees = this.randomSelectEmployees(employeesForShift, limit);
+        }
         
         // Cập nhật lại đăng ký cho những người không được chọn
         this.removeShiftFromUnselectedEmployees(allocatedRegistrations, date, shiftType, selectedEmployees);
@@ -172,7 +209,7 @@ class AutoShiftService {
   /**
    * Intelligent chọn employees từ danh sách - ưu tiên người ít ca hơn để công bằng
    */
-  intelligentSelectEmployees(employees, limit, allRegistrations) {
+  intelligentSelectEmployees(employees, limit, allRegistrations, maxShiftsPerEmployee = null) {
     // Tính tổng số ca của mỗi nhân viên trong toàn bộ lịch
     const employeeShiftCounts = {};
     allRegistrations.forEach(reg => {
@@ -182,6 +219,16 @@ class AutoShiftService {
     // Tính điểm cho mỗi nhân viên: ít ca = điểm cao hơn
     const scoredEmployees = employees.map(emp => {
       const totalShifts = employeeShiftCounts[emp.employeeName] || 0;
+
+      // Nếu có giới hạn ca/tuần và nhân viên đã đạt hoặc vượt, cho điểm rất thấp
+      if (maxShiftsPerEmployee && totalShifts >= maxShiftsPerEmployee) {
+        return {
+          ...emp,
+          score: -1000,
+          totalShifts
+        };
+      }
+
       // Số ca càng ít, điểm càng cao
       const score = 20 - totalShifts; // 20 điểm trừ đi số ca hiện tại
       return {
@@ -202,6 +249,14 @@ class AutoShiftService {
     
     // Chọn top limit
     return sorted.slice(0, limit);
+  }
+
+  /**
+   * Random chọn employees từ danh sách (không ưu tiên công bằng)
+   */
+  randomSelectEmployees(employees, limit) {
+    const shuffled = [...employees].sort(() => Math.random() - 0.5);
+    return shuffled.slice(0, limit);
   }
 
   /**
