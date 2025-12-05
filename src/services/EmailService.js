@@ -27,7 +27,8 @@ export const sendRegistrationNotification = async (employeeName, shifts) => {
       employee_name: employeeName,
       shifts_list: shiftsText,
       shifts_count: shifts.length,
-      registration_time: new Date().toLocaleString('vi-VN')
+      registration_time: new Date().toLocaleString('vi-VN'),
+      admin_link: `${window.location.origin}/xeplich-admin`
     };
 
     const response = await emailjs.send(
