@@ -5,9 +5,40 @@ class ShiftAllocationService {
     // Cấu hình mặc định cho mỗi ca
     this.defaultLimits = {
       'A': 3, // Ca sáng tối đa 3 người
-      'B': 3, // Ca chiều tối đa 3 người  
+      'B': 3, // Ca chiều tối đa 3 người (sẽ được điều chỉnh theo ngày)
       'C': 2  // Ca tối tối đa 2 người
     };
+  }
+
+  /**
+   * Lấy giới hạn cho tất cả các ca theo ngày
+   * @param {string} date - Ngày cần kiểm tra
+   * @returns {Object} Giới hạn cho từng ca
+   */
+  getShiftLimitsByDay(date) {
+    return {
+      'A': this.defaultLimits['A'],
+      'B': this.getBLimitByDay(date),
+      'C': this.defaultLimits['C']
+    };
+  }
+
+  /**
+   * Lấy giới hạn cho ca B theo ngày trong tuần
+   * @param {string} date - Ngày cần kiểm tra (YYYY-MM-DD)
+   * @returns {number} Giới hạn cho ca B
+   */
+  getBLimitByDay(date) {
+    const dayOfWeek = new Date(date).getDay(); // 0 = CN, 1 = Thứ 2, ..., 6 = Thứ 7
+    const dayNames = ['CN', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'];
+    
+    // Thứ 3, 5, 7, CN -> 2 người cho ca B
+    // Thứ 2, 4, 6 -> 1 người cho ca B
+    if (dayOfWeek === 3 || dayOfWeek === 5 || dayOfWeek === 6 || dayOfWeek === 0) {
+      return 2; // Thứ 3, 5, 7, CN
+    } else {
+      return 1; // Thứ 2, 4, 6
+    }
   }
 
   /**
@@ -58,8 +89,15 @@ class ShiftAllocationService {
     const overloaded = {};
     
     Object.keys(shiftCounts).forEach(shiftKey => {
-      const shiftType = shiftKey.split('_')[1];
-      const limit = limits[shiftType] || this.defaultLimits[shiftType];
+      const [date, shiftType] = shiftKey.split('_');
+      let limit;
+      
+      // Đối với ca B, áp dụng giới hạn theo ngày
+      if (shiftType === 'B') {
+        limit = this.getBLimitByDay(date);
+      } else {
+        limit = limits[shiftType] || this.defaultLimits[shiftType];
+      }
       
       if (shiftCounts[shiftKey] > limit) {
         overloaded[shiftKey] = {
