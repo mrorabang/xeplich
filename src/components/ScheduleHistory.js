@@ -65,7 +65,11 @@ const ScheduleHistory = () => {
       );
 
       if (result.success) {
-        toast.success(`Đã gửi lịch làm việc cho ${result.sentCount || 0} nhân viên!`);
+        const employeeNames = result.sentEmployees || [];
+        const namesText = employeeNames.length > 0 
+          ? employeeNames.join(', ') 
+          : '0 nhân viên';
+        toast.success(`Đã gửi lịch làm việc cho: ${namesText}`);
       } else {
         toast.error(result.error || 'Lỗi khi gửi lịch làm việc!');
       }
@@ -120,9 +124,11 @@ const ScheduleHistory = () => {
                     Tuần {new Date(dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} - {new Date(dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}
                   </div>
                   <div className="history-actions">
-                  
                     <button onClick={() => handleSendSchedule(scheduleData, dateRange, index)} className="send-schedule-btn" disabled={sendingSchedule}>
-                      {sendingSchedule ? 'Đang gửi...' : 'Gửi lịch'}
+                      {sendingSchedule ? 'Đang gửi...' : 'Gửi lịch qua mail'}
+                    </button>
+                    <button onClick={() => handleDeleteSchedule(weekKey)} className="delete-btn" disabled={sendingSchedule}>
+                      Xóa
                     </button>
                   </div>
                 </div>

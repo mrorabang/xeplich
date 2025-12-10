@@ -1,5 +1,5 @@
 import html2canvas from 'html2canvas';
-import { getEmployeeEmails } from '../firebaseService';
+import { getOnlyEmployeeEmails } from '../firebaseService';
 import emailjs from '@emailjs/browser';
 
 class EmailScheduleService {
@@ -77,8 +77,11 @@ class EmailScheduleService {
     try {
       console.log('Sending schedule email via EmailJS...');
       
-      // Lấy email của nhân viên
-      const employeeEmails = await getEmployeeEmails();
+      // Lấy email của nhân viên (loại trừ admin)
+      const employeeEmails = await getOnlyEmployeeEmails();
+      
+      console.log('EmailScheduleService - Employee emails to send:', employeeEmails);
+      console.log('EmailScheduleService - Admin email should be excluded:', process.env.REACT_APP_ADMIN_EMAIL);
       
       if (!employeeEmails || Object.keys(employeeEmails).length === 0) {
         throw new Error('Chưa có email nhân viên nào được cấu hình!');
@@ -87,6 +90,7 @@ class EmailScheduleService {
       let sentCount = 0;
       let failedCount = 0;
       const errors = [];
+      const sentEmployees = [];
 
       // Kiểm tra kích thước ảnh
       const imageSizeKB = Math.round(scheduleImage.length * 0.75 / 1024);
@@ -94,12 +98,12 @@ class EmailScheduleService {
 
       // Gửi email cho từng nhân viên qua EmailJS
       for (const [employeeName, email] of Object.entries(employeeEmails)) {
-        if (email && email.includes('@')) {
+        if (email && email.includes('@') && email.trim() !== '') {
           try {
             const templateParams = {
               to_email: email,
               to_name: employeeName,
-              subject: `Lịch làm việc tuần ${new Date(dateRange.from).toLocaleDateString('vi-VN')} - ${new Date(dateRange.to).toLocaleDateString('vi-VN')}`,
+              subject: `Lịch làm việc từ ${new Date(dateRange.from).toLocaleDateString('vi-VN')} - ${new Date(dateRange.to).toLocaleDateString('vi-VN')}`,
               date_range: `${new Date(dateRange.from).toLocaleDateString('vi-VN')} - ${new Date(dateRange.to).toLocaleDateString('vi-VN')}`,
               schedule_image: useImageLink ? 'Xem lịch làm việc trong file đính kèm' : scheduleImage,
               employee_name: employeeName,
@@ -107,10 +111,13 @@ class EmailScheduleService {
               image_size_note: useImageLink ? '(Ảnh quá lớn, xem trong file đính kèm)' : ''
             };
 
+            console.log(`Sending email to ${employeeName} at ${email}`);
+
             const response = await emailjs.send(this.serviceId, this.scheduleTemplateId, templateParams);
             
             if (response.status === 200) {
               sentCount++;
+              sentEmployees.push(employeeName);
               console.log(`Email sent to ${employeeName} at ${email}`);
             } else {
               failedCount++;
@@ -131,6 +138,7 @@ class EmailScheduleService {
         sentCount,
         failedCount,
         errors,
+        sentEmployees,
         message: `Đã gửi ${sentCount} email, ${failedCount} thất bại`,
         imageSizeKB,
         useImageLink

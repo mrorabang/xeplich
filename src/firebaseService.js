@@ -354,3 +354,37 @@ export const getEmployeeEmails = async () => {
     return null;
   }
 };
+
+// Lấy chỉ email nhân viên (loại trừ admin)
+export const getOnlyEmployeeEmails = async () => {
+  try {
+    const allEmails = await getEmployeeEmails();
+    const adminEmail = process.env.REACT_APP_ADMIN_EMAIL;
+    
+    if (!allEmails) return null;
+    
+    console.log('All emails:', allEmails);
+    console.log('Admin email:', adminEmail);
+    
+    // Loại trừ admin email - structure là {tên: email}
+    const employeeEmails = {};
+    for (const [name, email] of Object.entries(allEmails)) {
+      console.log(`Checking: ${name} -> ${email}`);
+      console.log(`Is admin? ${email === adminEmail}`);
+      console.log(`Is empty? ${!email || email.trim() === ''}`);
+      
+      if (email && email !== adminEmail && email.trim() !== '') {
+        employeeEmails[name] = email;
+        console.log(`Added: ${name} -> ${email}`);
+      } else {
+        console.log(`Excluded: ${name} -> ${email}`);
+      }
+    }
+    
+    console.log('Employee emails only:', employeeEmails);
+    return employeeEmails;
+  } catch (error) {
+    console.error('Error getting only employee emails:', error);
+    return null;
+  }
+};

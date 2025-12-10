@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSettings, saveEmployeeEmails, getEmployeeEmails } from '../firebaseService';
 import { useToast } from '../services/ToastService';
+import EmailScheduleService from '../services/EmailScheduleService';
 import './EmployeeEmailManager.css';
 
 const EmployeeEmailManager = () => {
@@ -11,6 +12,7 @@ const EmployeeEmailManager = () => {
   const [employeeEmails, setEmployeeEmails] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [testingEmail, setTestingEmail] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -54,6 +56,67 @@ const EmployeeEmailManager = () => {
       toast.error('Lỗi khi lưu email nhân viên!');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleTestEmail = async () => {
+    setTestingEmail(true);
+    try {
+      // Lấy danh sách nhân viên có email
+      const employeesWithEmail = Object.entries(employeeEmails).filter(([name, email]) => email && email.trim() && email.includes('@'));
+      
+      if (employeesWithEmail.length === 0) {
+        toast.error('Chưa có nhân viên nào có email hợp lệ!');
+        return;
+      }
+
+      // Tạo test schedule data
+      const testScheduleData = {
+        '2024-01-01': { morning: 'Tú', afternoon: 'Tuyền' },
+        '2024-01-02': { morning: 'Tuyền', afternoon: 'Tú' }
+      };
+      
+      const testDateRange = {
+        from: new Date().toISOString(),
+        to: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+      };
+
+      // Tạo element test
+      const testElement = document.createElement('div');
+      testElement.innerHTML = `
+        <div style="padding: 20px; background: white; border: 1px solid #ddd;">
+          <h3>Test Email Schedule</h3>
+          <p>Đây là email test để kiểm tra hệ thống gửi mail.</p>
+          <p>Gửi đến: ${employeesWithEmail.map(([name]) => name).join(', ')}</p>
+        </div>
+      `;
+      document.body.appendChild(testElement);
+
+      // Gửi email test
+      const result = await EmailScheduleService.sendScheduleWithImage(
+        testElement,
+        testScheduleData,
+        testDateRange
+      );
+
+      // Xóa element test
+      document.body.removeChild(testElement);
+
+      if (result.success) {
+        const employeeNames = result.sentEmployees || [];
+        const namesText = employeeNames.length > 0 
+          ? employeeNames.join(', ') 
+          : '0 nhân viên';
+        toast.success(`Test email thành công! Đã gửi cho: ${namesText}`);
+      } else {
+        toast.error(result.error || 'Test email thất bại!');
+      }
+      
+    } catch (error) {
+      console.error('Error testing email:', error);
+      toast.error('Lỗi khi test email!');
+    } finally {
+      setTestingEmail(false);
     }
   };
 
@@ -133,9 +196,10 @@ const EmployeeEmailManager = () => {
               <button
                 onClick={handleAutoFill}
                 className="auto-fill-btn"
-                disabled={saving}
+                disabled={true}
+                style={{ opacity: 0.5, cursor: 'not-allowed' }}
               >
-                Tự động điền
+                Tự động điền (Vô hiệu hóa)
               </button>
               <button
                 onClick={handleClearAll}
@@ -186,6 +250,14 @@ const EmployeeEmailManager = () => {
               className={`save-btn ${saving ? 'saving' : ''}`}
             >
               {saving ? 'Đang lưu...' : 'Lưu tất cả email'}
+            </button>
+            
+            <button
+              onClick={handleTestEmail}
+              disabled={testingEmail || saving}
+              className={`test-btn  ${testingEmail ? 'testing' : ''}`}
+            >
+              {testingEmail ? 'Đang test...' : 'Test gửi email'}
             </button>
           </div>
 
