@@ -249,6 +249,12 @@ export const getScheduleHistory = async () => {
       const weekKey = schedule.weekOf;
       const shifts = schedule.shifts || [];
 
+      // Validation: kiểm tra shifts có phải là array không
+      if (!Array.isArray(shifts)) {
+        console.warn('Invalid shifts data for week', weekKey, ':', shifts);
+        continue;
+      }
+
       // Tính dateRange từ weekOf
       const startDate = new Date(weekKey);
       const endDate = new Date(startDate);
@@ -264,15 +270,20 @@ export const getScheduleHistory = async () => {
       const employeeMap = {};
 
       shifts.forEach(shift => {
-        shift.employees.forEach(employee => {
-          if (!employeeMap[employee]) {
-            employeeMap[employee] = [];
-          }
-          employeeMap[employee].push({
-            date: shift.date,
-            shift: shift.shift
+        // Validation: kiểm tra shift và employees có tồn tại không
+        if (shift && shift.employees && Array.isArray(shift.employees)) {
+          shift.employees.forEach(employee => {
+            if (!employeeMap[employee]) {
+              employeeMap[employee] = [];
+            }
+            employeeMap[employee].push({
+              date: shift.date,
+              shift: shift.shift
+            });
           });
-        });
+        } else {
+          console.warn('Invalid shift data:', shift);
+        }
       });
 
       // Chuyển employeeMap thành array
@@ -319,5 +330,27 @@ export const updateRegistration = async (id, data) => {
   } catch (error) {
     console.error('Error updating registration:', error);
     return false;
+  }
+};
+
+// Employee emails collection
+export const saveEmployeeEmails = async (emails) => {
+  try {
+    await setDoc(doc(db, 'employeeEmails', 'current'), emails);
+    return true;
+  } catch (error) {
+    console.error('Error saving employee emails:', error);
+    return false;
+  }
+};
+
+export const getEmployeeEmails = async () => {
+  try {
+    const docRef = doc(db, 'employeeEmails', 'current');
+    const docSnap = await getDoc(docRef);
+    return docSnap.exists() ? docSnap.data() : null;
+  } catch (error) {
+    console.error('Error getting employee emails:', error);
+    return null;
   }
 };

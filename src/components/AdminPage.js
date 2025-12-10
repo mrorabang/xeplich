@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek, getAutoShiftConfig, saveAutoShiftConfig } from '../firebaseService';
+import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek, getAutoShiftConfig, saveAutoShiftConfig, getEmployeeEmails } from '../firebaseService';
 import { useToast } from '../services/ToastService';
 import AutoShiftService from '../services/AutoShiftService';
 import ShiftWarningService from '../services/ShiftWarningService';
 import FinalScheduleTable from './FinalScheduleTable';
+import ViewModeToggle from './ViewModeToggle';
 import './AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
@@ -31,6 +32,8 @@ const AdminPage = ({ onLogout }) => {
     maxShiftsPerEmployee: 7
   });
   const [savingAutoConfig, setSavingAutoConfig] = useState(false);
+  const [hasAllocatedSchedule, setHasAllocatedSchedule] = useState(false);
+  const [savingSchedule, setSavingSchedule] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -41,6 +44,21 @@ const AdminPage = ({ onLogout }) => {
   useEffect(() => {
     checkShiftWarnings();
   }, [registrations]);
+
+  useEffect(() => {
+    // Check if there are registrations with shifts on page load
+    const checkRegistrationsWithShifts = async () => {
+      try {
+        const allRegistrations = await getRegistrations();
+        const hasShifts = allRegistrations.some(reg => reg.shifts && reg.shifts.length > 0);
+        setHasAllocatedSchedule(hasShifts);
+      } catch (error) {
+        console.error('Error checking registrations:', error);
+      }
+    };
+    
+    checkRegistrationsWithShifts();
+  }, []);
 
   const loadSettings = async () => {
     const data = await getSettings();
@@ -156,6 +174,64 @@ const AdminPage = ({ onLogout }) => {
     }
   };
 
+  const getDayName = (dateStr) => {
+    const date = new Date(dateStr);
+    const days = ['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy'];
+    return days[date.getDay()];
+  };
+
+  const getShiftHours = (shift) => {
+    // Mỗi ca làm việc 5 giờ
+    return 5;
+  };
+
+  const getTotalHoursForDay = (dateStr) => {
+    const shiftsForDay = ['A', 'B', 'C'].filter(shift => {
+      // Tìm tất cả registration có ca này vào ngày này
+      return registrations.some(reg => 
+        reg.allocated && reg.shifts.some(s => 
+          s.date === dateStr && s.shift === shift
+        )
+      );
+    });
+    return shiftsForDay.length * getShiftHours('A'); // 5 giờ/ca
+  };
+
+  const getTotalHoursForWeek = () => {
+    let total = 0;
+    if (!settings.dateRange.from) return 0;
+    
+    const startDate = new Date(settings.dateRange.from);
+    
+    for (let i = 0; i < 7; i++) {
+      const currentDate = new Date(startDate);
+      currentDate.setDate(startDate.getDate() + i);
+      const dateStr = currentDate.toISOString().split('T')[0];
+      total += getTotalHoursForDay(dateStr);
+    }
+    
+    return total;
+  };
+
+  const getAllocatedShiftsForDay = (dateStr) => {
+    const allocatedShifts = [];
+    
+    registrations.forEach(reg => {
+      if (reg.allocated) {
+        reg.shifts.forEach(shift => {
+          if (shift.date === dateStr) {
+            allocatedShifts.push({
+              employeeName: reg.employeeName,
+              shift: shift.shift
+            });
+          }
+        });
+      }
+    });
+    
+    return allocatedShifts;
+  };
+
   const handleRefreshRegistrations = async () => {
     setRefreshLoading(true);
     await loadRegistrations();
@@ -214,9 +290,9 @@ const AdminPage = ({ onLogout }) => {
 
         toast.success(result.message || `Đã phân bổ thành công ${result.allocatedCount} nhân viên!`);
 
-        // Tạo lịch chốt nếu thành công
+        // Set state để hiển thị nút lưu lịch chốt
         if (result.allocatedCount > 0) {
-          await createScheduleFromAllocations();
+          setHasAllocatedSchedule(true);
         }
       } else {
         toast.error('Lỗi khi phân bổ ca: ' + result.error);
@@ -230,36 +306,72 @@ const AdminPage = ({ onLogout }) => {
   };
 
   const createScheduleFromAllocations = async () => {
+    setSavingSchedule(true);
     try {
-      // Lấy tất cả registrations đã được allocated
+      // Lấy tất cả registrations (không chỉ allocated ones)
       const allRegistrations = await getRegistrations();
-      const allocatedRegistrations = allRegistrations.filter(reg => reg.allocated);
+      
+      // Filter những registration có shifts (đã đăng ký)
+      const registrationsWithShifts = allRegistrations.filter(reg => reg.shifts && reg.shifts.length > 0);
 
-      if (allocatedRegistrations.length === 0) return;
+      if (registrationsWithShifts.length === 0) {
+        toast.warning('Không có đăng ký nào để lưu!');
+        return;
+      }
 
-      // Tạo schedule data từ allocations
+      console.log('Saving schedule for registrations:', registrationsWithShifts.length);
+
+      // Tạo schedule data từ registrations - chuyển đổi sang format đúng
       const scheduleData = [];
-      allocatedRegistrations.forEach(reg => {
-        scheduleData.push({
-          id: reg.id,
-          employeeName: reg.employeeName,
-          shifts: reg.shifts
+      registrationsWithShifts.forEach(reg => {
+        reg.shifts.forEach(shift => {
+          scheduleData.push({
+            date: shift.date,
+            shift: shift.shift,
+            employees: [reg.employeeName]
+          });
         });
       });
 
-      // Lưu schedule
-      const success = await saveScheduleByWeek(settings.dateRange.from, scheduleData);
-      if (success) {
-        toast.success('Đã tạo lịch chốt thành công!');
+      // Gộp các shifts giống nhau
+      const mergedShifts = [];
+      scheduleData.forEach(shift => {
+        const existingShift = mergedShifts.find(
+          s => s.date === shift.date && s.shift === shift.shift
+        );
+        if (existingShift) {
+          // Thêm nhân viên vào ca đã có
+          if (!existingShift.employees.includes(shift.employees[0])) {
+            existingShift.employees.push(shift.employees[0]);
+          }
+        } else {
+          // Thêm ca mới
+          mergedShifts.push({
+            date: shift.date,
+            shift: shift.shift,
+            employees: [shift.employees[0]]
+          });
+        }
+      });
 
-        // Reload lại trang để hiển thị schedule table
-        setTimeout(() => {
-          window.location.reload();
-        }, 1500);
+      console.log('Saving merged shifts:', mergedShifts.length);
+
+      // Lưu schedule với format đúng
+      const success = await saveScheduleByWeek(settings.dateRange.from, mergedShifts);
+      if (success) {
+        setHasAllocatedSchedule(true);
+        toast.success(`Đã lưu lịch chốt thành công cho ${registrationsWithShifts.length} nhân viên!`);
+        
+        // Không reload trang ngay lập tức, để người dùng có thể tiếp tục làm việc
+        // setTimeout(() => {
+        //   window.location.reload();
+        // }, 1500);
       }
     } catch (error) {
       console.error('Error creating schedule:', error);
       toast.error('Lỗi khi tạo lịch chốt!');
+    } finally {
+      setSavingSchedule(false);
     }
   };
 
@@ -306,7 +418,10 @@ const AdminPage = ({ onLogout }) => {
     <div className="admin-page">
       <div className="admin-header">
         <h1>Admin Page - Quản lý lịch làm việc</h1>
-        <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
+        <div className="admin-header-actions">
+          <ViewModeToggle onClick={() => navigate('/manual-schedule')} />
+          <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
+        </div>
       </div>
 
       {shiftWarnings.hasWarnings && (
@@ -437,6 +552,10 @@ const AdminPage = ({ onLogout }) => {
           <button onClick={() => navigate('/schedule-history')} className="history-btn">
             Lịch sử lịch làm
           </button>
+
+          <button onClick={() => navigate('/email-manager')} className="email-manager-btn">
+            Quản lý Gmail
+          </button>
         </div>
 
         <div className="registrations-section">
@@ -457,6 +576,15 @@ const AdminPage = ({ onLogout }) => {
               >
                 {refreshLoading ? 'Đang tải...' : 'Refresh'}
               </button>
+              {hasAllocatedSchedule && (
+                <button
+                  onClick={createScheduleFromAllocations}
+                  className="save-schedule-btn"
+                  disabled={loading || savingSchedule}
+                >
+                  {savingSchedule ? 'Đang lưu...' : 'Lưu lịch chốt'}
+                </button>
+              )}
             </div>
           </div>
 
@@ -494,7 +622,10 @@ const AdminPage = ({ onLogout }) => {
 
           {/* Bảng lịch chốt - chỉ hiển thị sau khi phân bổ */}
           {registrations.some(reg => reg.allocated) && (
-            <FinalScheduleTable registrations={registrations.filter(reg => reg.allocated)} dateRange={settings.dateRange} />
+            <FinalScheduleTable
+              registrations={registrations.filter(reg => reg.allocated)}
+              dateRange={settings.dateRange}
+            />
           )}
         </div>
       </div>

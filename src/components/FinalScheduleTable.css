@@ -136,6 +136,18 @@
   font-weight: 600;
 }
 
+/* Custom styles for ManualScheduleConverter checkboxes */
+.final-schedule-table .checkbox-cell input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: #2e7d32;
+}
+
+.final-schedule-table .checkbox-cell input[type="checkbox"]:checked {
+  accent-color: #2e7d32;
+}
+
 @media (max-width: 768px) {
   .final-schedule-container {
     margin-top: 1rem;
@@ -215,6 +227,11 @@
     font-size: 0.5rem;
     min-width: 45px;
     padding: 0.25rem;
+  }
+  
+  .final-schedule-table .checkbox-cell input[type="checkbox"] {
+    width: 12px;
+    height: 12px;
   }
   
   .no-data {
@@ -304,6 +321,11 @@
     font-size: 0.45rem;
     min-width: 35px;
     padding: 0.2rem;
+  }
+  
+  .final-schedule-table .checkbox-cell input[type="checkbox"] {
+    width: 10px;
+    height: 10px;
   }
   
   .no-data {

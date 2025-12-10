@@ -15,6 +15,7 @@ const StaffPage = () => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [registeredEmployees, setRegisteredEmployees] = useState([]);
+  const [filterType, setFilterType] = useState('all');
 
   useEffect(() => {
     checkActiveStatus();
@@ -194,6 +195,106 @@ const StaffPage = () => {
     return days[date.getDay()];
   };
 
+  const applyFilter = (filter) => {
+    setFilterType(filter);
+    
+    // If "all", keep current state
+    if (filter === 'all') {
+      return;
+    }
+    
+    const newShifts = { ...shifts };
+    
+    // Reset all shifts first
+    Object.keys(newShifts).forEach(key => {
+      newShifts[key] = false;
+    });
+    
+    const startDate = new Date(settings.dateRange.from);
+    
+    switch (filter) {
+      case 'clear':
+        // All shifts already reset to false
+        break;
+        
+      case 'oddDays':
+        // Thứ 3, Thứ 5, Thứ 7 (days 2, 4, 6)
+        for (let i = 0; i < 7; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dayOfWeek = currentDate.getDay();
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          if (dayOfWeek === 2 || dayOfWeek === 4 || dayOfWeek === 6) {
+            ['A', 'B', 'C'].forEach(shift => {
+              newShifts[`${dateStr}_${shift}`] = true;
+            });
+          }
+        }
+        break;
+        
+      case 'evenDays':
+        // Thứ 2, Thứ 4, Thứ 6 (days 1, 3, 5)
+        for (let i = 0; i < 7; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dayOfWeek = currentDate.getDay();
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          if (dayOfWeek === 1 || dayOfWeek === 3 || dayOfWeek === 5) {
+            ['A', 'B', 'C'].forEach(shift => {
+              newShifts[`${dateStr}_${shift}`] = true;
+            });
+          }
+        }
+        break;
+        
+      case 'weekdays':
+        // Thứ 2 - Thứ 6 (days 1-5)
+        for (let i = 0; i < 7; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dayOfWeek = currentDate.getDay();
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+            ['A', 'B', 'C'].forEach(shift => {
+              newShifts[`${dateStr}_${shift}`] = true;
+            });
+          }
+        }
+        break;
+        
+      case 'weekend':
+        // Thứ 7, Chủ Nhật (days 6, 0)
+        for (let i = 0; i < 7; i++) {
+          const currentDate = new Date(startDate);
+          currentDate.setDate(startDate.getDate() + i);
+          const dayOfWeek = currentDate.getDay();
+          const dateStr = currentDate.toISOString().split('T')[0];
+          
+          if (dayOfWeek === 6 || dayOfWeek === 0) {
+            ['A', 'B', 'C'].forEach(shift => {
+              newShifts[`${dateStr}_${shift}`] = true;
+            });
+          }
+        }
+        break;
+        
+      case 'allShifts':
+        // Select all shifts for all days
+        Object.keys(newShifts).forEach(key => {
+          newShifts[key] = true;
+        });
+        break;
+        
+      default:
+        break;
+    }
+    
+    setShifts(newShifts);
+  };
+
   if (loading) {
     return (
       <div className="staff-page">
@@ -281,6 +382,24 @@ const StaffPage = () => {
                   {emp} {registeredEmployees.includes(emp) ? '(Đã đăng ký)' : ''}
                 </option>
               ))}
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="filterType">Bộ lọc nhanh:</label>
+            <select
+              id="filterType"
+              value={filterType}
+              onChange={(e) => applyFilter(e.target.value)}
+              className="filter-select"
+            >
+              <option value="all">Chọn tất cả</option>
+              <option value="clear">Bỏ chọn tất cả</option>
+              <option value="oddDays">Chọn thứ lẻ (T3, T5, T7)</option>
+              <option value="evenDays">Chọn thứ chẵn (T2, T4, T6)</option>
+              <option value="weekdays">Chọn ngày thường (T2-T6)</option>
+              <option value="weekend">Chọn cuối tuần (T7, CN)</option>
+              <option value="allShifts">Chọn tất cả các ca</option>
             </select>
           </div>
 

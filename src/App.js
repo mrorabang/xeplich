@@ -5,6 +5,8 @@ import AdminPage from './components/AdminPage';
 import StaffPage from './components/StaffPage';
 import ScheduleHistory from './components/ScheduleHistory';
 import ShiftAllocationManager from './components/ShiftAllocationManager';
+import ManualScheduleConverter from './components/ManualScheduleConverter';
+import EmployeeEmailManager from './components/EmployeeEmailManager';
 import { ToastProvider } from './services/ToastService';
 import './App.css';
 
@@ -34,6 +36,12 @@ function App() {
           <Route path="/staff" element={<StaffPage />} />
           <Route path="/schedule-history" element={<ScheduleHistory/>} />
           <Route path="/shift-allocation" element={<ShiftAllocationManager/>} />
+          <Route path="/manual-schedule" element={<ManualScheduleConverter />} />
+          <Route path="/email-manager" element={
+            isAdmin ? 
+            <EmployeeEmailManager /> : 
+            <AdminLogin onLogin={handleAdminLogin} />
+          } />
         </Routes>
       </div>
     </ToastProvider>

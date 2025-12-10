@@ -6,7 +6,7 @@ emailjs.init(process.env.REACT_APP_EMAILJS_PUBLIC_KEY);
 export const sendRegistrationNotification = async (employeeName, shifts) => {
   // Kiểm tra cấu hình EmailJS
   if (!process.env.REACT_APP_EMAILJS_SERVICE_ID || 
-      !process.env.REACT_APP_EMAILJS_TEMPLATE_ID ||
+      !process.env.REACT_APP_EMAILJS_REGISTRATION_TEMPLATE_ID ||
       !process.env.REACT_APP_EMAILJS_PUBLIC_KEY ||
       !process.env.REACT_APP_ADMIN_EMAIL) {
     console.log('EmailJS chưa được cấu hình, bỏ qua gửi email');
@@ -33,7 +33,7 @@ export const sendRegistrationNotification = async (employeeName, shifts) => {
 
     const response = await emailjs.send(
       process.env.REACT_APP_EMAILJS_SERVICE_ID,
-      process.env.REACT_APP_EMAILJS_TEMPLATE_ID,
+      process.env.REACT_APP_EMAILJS_REGISTRATION_TEMPLATE_ID,
       templateParams
     );
 

@@ -56,6 +56,30 @@
   background: rgba(255, 255, 255, 0.3);
 }
 
+.view-mode-toggle-btn {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+  white-space: nowrap;
+}
+
+.view-mode-toggle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+  background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+.view-mode-toggle-btn:active {
+  transform: translateY(0);
+}
+
 .admin-content {
   display: grid;
   grid-template-columns: 3fr 7fr;
@@ -375,6 +399,32 @@
 
 .refresh-btn:hover {
   transform: translateY(-2px);
+}
+
+.email-manager-btn {
+  width: 100%;
+  padding: 0.6rem;
+  background: linear-gradient(135deg, #0089d8 0%, #d14836 100%);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  margin-top: 0.5rem;
+  text-decoration: none;
+  text-align: center;
+  display: block;
+  box-shadow: 0 4px 12px rgba(234, 67, 53, 0.3);
+}
+
+.email-manager-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(234, 67, 53, 0.4);
+}
+
+.email-manager-btn:active {
+  transform: translateY(0);
 }
 
 .registrations-list {
@@ -803,6 +853,30 @@
 }
 
 .auto-allocate-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.save-schedule-btn {
+  background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.save-schedule-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+}
+
+.save-schedule-btn:disabled {
   background: #6c757d;
   cursor: not-allowed;
   transform: none;

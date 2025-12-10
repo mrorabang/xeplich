@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getScheduleHistory, deleteScheduleByWeek } from '../firebaseService';
+import { getScheduleHistory, deleteScheduleByWeek, getEmployeeEmails } from '../firebaseService';
 import FinalScheduleTable from './FinalScheduleTable';
 import { useToast } from '../services/ToastService';
+import EmailScheduleService from '../services/EmailScheduleService';
 import './ScheduleHistory.css';
 
 const ScheduleHistory = () => {
@@ -10,6 +11,7 @@ const ScheduleHistory = () => {
   const { toast } = useToast();
   const [historyData, setHistoryData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [sendingSchedule, setSendingSchedule] = useState(false);
 
   useEffect(() => {
     loadScheduleHistory();
@@ -41,6 +43,38 @@ const ScheduleHistory = () => {
         console.error('Error deleting schedule:', error);
         toast.error('Lỗi khi xóa lịch chốt!');
       }
+    }
+  };
+
+  const handleSendSchedule = async (scheduleData, dateRange, index) => {
+    setSendingSchedule(true);
+    try {
+      // Lấy element của lịch cần chụp
+      const scheduleElement = document.querySelector(`#history-schedule-${index}`);
+      
+      if (!scheduleElement) {
+        toast.error('Không tìm thấy element lịch để chụp!');
+        return;
+      }
+
+      // Sử dụng EmailScheduleService để gửi
+      const result = await EmailScheduleService.sendScheduleWithImage(
+        scheduleElement,
+        scheduleData,
+        dateRange
+      );
+
+      if (result.success) {
+        toast.success(`Đã gửi lịch làm việc cho ${result.sentCount || 0} nhân viên!`);
+      } else {
+        toast.error(result.error || 'Lỗi khi gửi lịch làm việc!');
+      }
+      
+    } catch (error) {
+      console.error('Error sending schedule:', error);
+      toast.error('Lỗi khi gửi lịch làm việc!');
+    } finally {
+      setSendingSchedule(false);
     }
   };
 
@@ -86,15 +120,13 @@ const ScheduleHistory = () => {
                     Tuần {new Date(dateRange.from).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})} - {new Date(dateRange.to).toLocaleDateString('vi-VN', {day: '2-digit', month: '2-digit', year: 'numeric'})}
                   </div>
                   <div className="history-actions">
-                    <button onClick={() => {/* TODO: export PNG */}} className="export-btn">
-                      📷 Xuất PNG
-                    </button>
-                    <button onClick={() => handleDeleteSchedule(weekKey)} className="delete-btn">
-                      🗑️ Xóa
+                  
+                    <button onClick={() => handleSendSchedule(scheduleData, dateRange, index)} className="send-schedule-btn" disabled={sendingSchedule}>
+                      {sendingSchedule ? 'Đang gửi...' : 'Gửi lịch'}
                     </button>
                   </div>
                 </div>
-                <div className="history-schedule">
+                <div id={`history-schedule-${index}`} className="history-schedule">
                   <FinalScheduleTable
                     registrations={[]}
                     dateRange={dateRange}

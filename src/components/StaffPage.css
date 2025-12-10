@@ -129,6 +129,22 @@
   border-color: #0984e3;
 }
 
+.filter-select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid #ddd;
+  border-radius: 8px;
+  font-size: 1rem;
+  background: white;
+  cursor: pointer;
+  transition: border-color 0.3s;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #0984e3;
+}
+
 .shifts-table {
   margin-bottom: 2rem;
 }
@@ -389,6 +405,11 @@
     font-size: 0.85rem;
   }
   
+  .filter-select {
+    padding: 0.5rem;
+    font-size: 0.85rem;
+  }
+  
   .shifts-table h3 {
     font-size: 0.9rem;
   }
@@ -558,6 +579,11 @@
   }
   
   .employee-select {
+    padding: 0.4rem;
+    font-size: 0.8rem;
+  }
+  
+  .filter-select {
     padding: 0.4rem;
     font-size: 0.8rem;
   }
