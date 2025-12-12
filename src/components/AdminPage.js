@@ -420,7 +420,7 @@ const AdminPage = ({ onLogout }) => {
         <h1>Admin Page - Quản lý lịch làm việc</h1>
         <div className="admin-header-actions">
           <ViewModeToggle onClick={() => navigate('/manual-schedule')} />
-          <button onClick={onLogout} className="logout-btn">Đăng xuất</button>
+          <button onClick={onLogout} className=" btn btn-danger">Đăng xuất</button>
         </div>
       </div>
 
@@ -518,7 +518,7 @@ const AdminPage = ({ onLogout }) => {
 
           <div className='divider' />
 
-            <div className="auto-shift-options auto-shift-config">
+            <div className="auto-shift-options auto-shift-config mt-3">
               <label className="auto-option">
                 <input
                   type="checkbox"
@@ -528,7 +528,7 @@ const AdminPage = ({ onLogout }) => {
                 Ưu tiên nhân viên có ít ca hơn
               </label>
 
-              <div className="auto-max-shifts input">
+              {/* <div className="auto-max-shifts input">
                 <span>Tối đa ca nhân viên / tuần:</span>
                 <input
                   type="number"
@@ -539,7 +539,7 @@ const AdminPage = ({ onLogout }) => {
                   className="employee-input input
 "
                 />
-              </div>
+              </div> */}
             </div>
           </div>
 

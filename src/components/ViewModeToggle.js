@@ -4,7 +4,7 @@ const ViewModeToggle = ({ onClick }) => {
   return (
     <button
       type="button"
-      className="view-mode-toggle-btn"
+      className="btn btn-primary me-2"
       onClick={onClick}
     >
       Chuyển đổi dạng lịch

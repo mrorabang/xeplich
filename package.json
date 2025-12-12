@@ -11,6 +11,8 @@
     "@testing-library/user-event": "^13.5.0",
     "firebase": "^12.6.0",
     "html2canvas": "^1.4.1",
+    "mdb-react-ui-kit": "^10.0.0",
+    "mdb-ui-kit": "^9.3.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-router-dom": "^7.10.1",

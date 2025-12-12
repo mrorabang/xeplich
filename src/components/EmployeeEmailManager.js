@@ -3,6 +3,21 @@ import { useNavigate } from 'react-router-dom';
 import { getSettings, saveEmployeeEmails, getEmployeeEmails } from '../firebaseService';
 import { useToast } from '../services/ToastService';
 import EmailScheduleService from '../services/EmailScheduleService';
+import {
+  MDBContainer,
+  MDBRow,
+  MDBCol,
+  MDBCard,
+  MDBCardBody,
+  MDBCardTitle,
+  MDBCardText,
+  MDBBtn,
+  MDBTable,
+  MDBTableHead,
+  MDBTableBody,
+  MDBInput,
+  MDBIcon
+} from 'mdb-react-ui-kit';
 import './EmployeeEmailManager.css';
 
 const EmployeeEmailManager = () => {
@@ -26,7 +41,26 @@ const EmployeeEmailManager = () => {
       ]);
       
       setSettings(settingsData);
-      setEmployeeEmails(emailsData || {});
+      
+      // Dọn dẹp email của nhân viên không còn tồn tại
+      if (settingsData && settingsData.employees && emailsData) {
+        const cleanedEmails = {};
+        settingsData.employees.forEach(emp => {
+          if (emailsData[emp]) {
+            cleanedEmails[emp] = emailsData[emp];
+          }
+        });
+        
+        // Nếu có email bị dọn dẹp, lưu lại
+        if (Object.keys(cleanedEmails).length !== Object.keys(emailsData).length) {
+          await saveEmployeeEmails(cleanedEmails);
+        }
+        
+        setEmployeeEmails(cleanedEmails);
+      } else {
+        setEmployeeEmails(emailsData || {});
+      }
+      
       setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -122,38 +156,38 @@ const EmployeeEmailManager = () => {
 
   const handleAutoFill = () => {
     const autoEmails = {};
-    settings.employees.forEach(emp => {
-      // Tạo email tự động dựa trên tên nhân viên
-      const cleanName = emp.toLowerCase()
-        .replace(/\s+/g, '')
-        .replace(/đ/g, 'd')
-        .replace(/â/g, 'a')
-        .replace(/ê/g, 'e')
-        .replace(/ô/g, 'o')
-        .replace(/ơ/g, 'o')
-        .replace(/ư/g, 'u')
-        .replace(/ă/g, 'a')
-        .replace(/ấ/g, 'a')
-        .replace(/ầ/g, 'a')
-        .replace(/ễ/g, 'e')
-        .replace(/ứ/g, 'u')
-        .replace(/ớ/g, 'o')
-        .replace(/ờ/g, 'o')
-        .replace(/ị/g, 'i')
-        .replace(/ị/g, 'i');
+    // settings.employees.forEach(emp => {
+    //   // Tạo email tự động dựa trên tên nhân viên
+    //   const cleanName = emp.toLowerCase()
+    //     .replace(/\s+/g, '')
+    //     .replace(/đ/g, 'd')
+    //     .replace(/â/g, 'a')
+    //     .replace(/ê/g, 'e')
+    //     .replace(/ô/g, 'o')
+    //     .replace(/ơ/g, 'o')
+    //     .replace(/ư/g, 'u')
+    //     .replace(/ă/g, 'a')
+    //     .replace(/ấ/g, 'a')
+    //     .replace(/ầ/g, 'a')
+    //     .replace(/ễ/g, 'e')
+    //     .replace(/ứ/g, 'u')
+    //     .replace(/ớ/g, 'o')
+    //     .replace(/ờ/g, 'o')
+    //     .replace(/ị/g, 'i')
+    //     .replace(/ị/g, 'i');
       
-      autoEmails[emp] = `${cleanName}@gmail.com`;
-    });
+    //   autoEmails[emp] = `${cleanName}@gmail.com`;
+    // });
     
     setEmployeeEmails(autoEmails);
     toast.info('Đã tự động điền email theo tên nhân viên!');
   };
 
   const handleClearAll = () => {
-    if (window.confirm('Bạn có chắc muốn xóa tất cả email?')) {
-      setEmployeeEmails({});
-      toast.success('Đã xóa tất cả email!');
-    }
+    // if (window.confirm('Bạn có chắc muốn xóa tất cả email?')) {
+    //   setEmployeeEmails({});
+    //   toast.success('Đã xóa tất cả email!');
+    // }
   };
 
   if (loading) {
@@ -182,108 +216,109 @@ const EmployeeEmailManager = () => {
       <div className="admin-header">
         <h1>Quản lý Email Nhân viên</h1>
         <div className="admin-header-actions">
-          <button onClick={() => navigate('/xeplich-admin')} className="back-btn">
+          <MDBBtn 
+            onClick={() => navigate('/xeplich-admin')} 
+            className="btn-back"
+          >
+            <MDBIcon fas icon="arrow-left" className="me-2" />
             Quay lại Admin
-          </button>
+          </MDBBtn>
         </div>
       </div>
 
-      <div className="admin-content">
-        <div className="email-manager-section">
-          <div className="section-header">
-            <h2>Danh sách Email nhân viên</h2>
-            <div className="header-actions">
-              <button
-                onClick={handleAutoFill}
-                className="auto-fill-btn"
-                disabled={true}
-                style={{ opacity: 0.5, cursor: 'not-allowed' }}
-              >
-                Tự động điền (Vô hiệu hóa)
-              </button>
-              <button
-                onClick={handleClearAll}
-                className="clear-btn"
+      <MDBContainer className="py-4">
+        <MDBCard>
+          <MDBCardBody className="p-4">
+            <div className="d-flex justify-content-between align-items-center mb-4">
+              <MDBCardTitle tag="h3" className="mb-0">
+                Danh sách Email nhân viên
+              </MDBCardTitle>
+              {/* <div className="d-flex gap-2">
+                <MDBBtn
+                  onClick={handleAutoFill}
+                  disabled={true}
+                  color="info"
+                  size="sm"
+                >
+                  <MDBIcon fas icon="magic" className="me-2" />
+                  Tự động điền (Vô hiệu hóa)
+                </MDBBtn>
+                <MDBBtn
+                  onClick={handleClearAll}
+                  disabled={saving}
+                  color="danger"
+                  size="sm"
+                >
+                  <MDBIcon fas icon="trash" className="me-2" />
+                  Xóa tất cả
+                </MDBBtn>
+              </div> */}
+            </div>
+
+            <MDBTable responsive striped hover>
+              <MDBTableHead>
+                <tr>
+                  <th style={{ width: '200px' }}>
+                    {/* <MDBIcon fas icon="users" className="me-2" /> */}
+                    Nhân viên
+                  </th>
+                  <th>
+                    {/* <MDBIcon fas icon="envelope" className="me-2" /> */}
+                    Email
+                  </th>
+                </tr>
+              </MDBTableHead>
+              <MDBTableBody>
+                {settings.employees.map((employee, index) => (
+                  <tr key={index}>
+                    <td>
+                      <div className="d-flex align-items-center">
+                        {/* <div className="employee-avatar-mdb">
+                          <MDBIcon fas icon="user-circle" />
+                        </div> */}
+                        <span className="employee-name-mdb fw-bold">{employee}</span>
+                      </div>
+                    </td>
+                    <td>
+                      <MDBInput
+                        type="email"
+                        value={employeeEmails[employee] || ''}
+                        onChange={(e) => handleEmailChange(employee, e.target.value)}
+                        placeholder="Nhập email..."
+                        size="sm"
+                        className="email-input-mdb fw-bold"
+                        icon={<MDBIcon fas icon="envelope" />}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </MDBTableBody>
+            </MDBTable>
+
+            <div className="d-flex justify-content-center gap-3 mt-4">
+              <MDBBtn
+                onClick={handleSave}
                 disabled={saving}
+                color="primary"
+                className="px-4"
               >
-                Xóa tất cả
-              </button>
+                <MDBIcon fas icon="save" className="me-2" />
+                {saving ? 'Đang lưu...' : 'Lưu'}
+              </MDBBtn>
+              
+              <MDBBtn
+                onClick={handleTestEmail}
+                disabled={testingEmail || saving}
+                color="warning"
+                className="px-4"
+              >
+                <MDBIcon fas icon="paper-plane" className="me-2" />
+                {testingEmail ? 'Đang gửi...' : 'Gửi thử'}
+              </MDBBtn>
             </div>
-          </div>
-
-          {/* <div className="email-info">
-            <p className="info-text">
-              <strong>Mục đích:</strong> Gửi lịch làm việc tự động đến email nhân viên khi có lịch chốt.
-            </p>
-            <p className="info-text">
-              <strong>Lưu ý:</strong> Email sẽ được sử dụng để gửi thông báo lịch làm việc hàng tuần.
-            </p>
-          </div> */}
-
-          <div className="email-list">
-            {settings.employees.map((employee, index) => (
-              <div key={index} className="email-item">
-                <div className="employee-info">
-                  <label className="employee-label">
-                    Nhân viên:
-                  </label>
-                  <span className="employee-name">{employee}</span>
-                </div>
-                <div className="email-input-group">
-                 
-                  <input
-                    type="email"
-                    value={employeeEmails[employee] || ''}
-                    onChange={(e) => handleEmailChange(employee, e.target.value)}
-                    placeholder="Nhập gmail tại đây..."
-                    className="email-input"
-                  />
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="save-section">
-            <button
-              onClick={handleSave}
-              disabled={saving}
-              className={`save-btn ${saving ? 'saving' : ''}`}
-            >
-              {saving ? 'Đang lưu...' : 'Lưu tất cả email'}
-            </button>
-            
-            <button
-              onClick={handleTestEmail}
-              disabled={testingEmail || saving}
-              className={`test-btn  ${testingEmail ? 'testing' : ''}`}
-            >
-              {testingEmail ? 'Đang test...' : 'Test gửi email'}
-            </button>
-          </div>
-
-          <div className="statistics">
-            <h3>Thống kê</h3>
-            <div className="stats-grid">
-              <div className="stat-item">
-                <span className="stat-label">Tổng nhân viên:</span>
-                <span className="stat-value">{settings.employees.length}</span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Đã có email:</span>
-                <span className="stat-value">
-                  {Object.values(employeeEmails).filter(email => email && email.trim()).length}
-                </span>
-              </div>
-              <div className="stat-item">
-                <span className="stat-label">Chưa có email:</span>
-                <span className="stat-value">
-                  {settings.employees.length - Object.values(employeeEmails).filter(email => email && email.trim()).length}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+          </MDBCardBody>
+        </MDBCard>
+      </MDBContainer>
     </div>
   );
 };
