@@ -7,6 +7,7 @@ import AutoShiftService from '../services/AutoShiftService';
 import ShiftWarningService from '../services/ShiftWarningService';
 import FinalScheduleTable from './FinalScheduleTable';
 import ViewModeToggle from './ViewModeToggle';
+import EmailScheduleService from '../services/EmailScheduleService';
 import './AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
@@ -54,6 +55,7 @@ const AdminPage = ({ onLogout }) => {
   const [savingAutoConfig, setSavingAutoConfig] = useState(false);
   const [hasAllocatedSchedule, setHasAllocatedSchedule] = useState(false);
   const [savingSchedule, setSavingSchedule] = useState(false);
+  const [sendingReminder, setSendingReminder] = useState(false);
 
   useEffect(() => {
     loadSettings();
@@ -434,6 +436,52 @@ const AdminPage = ({ onLogout }) => {
     }
   };
 
+  const handleSendReminder = async () => {
+    setSendingReminder(true);
+    try {
+      // Lấy danh sách nhân viên từ settings
+      const allEmployees = settings.employees || [];
+      
+      // Lấy danh sách nhân viên đã đăng ký
+      const registeredEmployees = registrations.map(reg => reg.employeeName);
+      
+      // Tìm nhân viên chưa đăng ký
+      const unregisteredEmployees = allEmployees.filter(emp => 
+        !registeredEmployees.includes(emp)
+      );
+      
+      if (unregisteredEmployees.length === 0) {
+        showToast('Tất cả nhân viên đã đăng ký ca!', 'info');
+        return;
+      }
+      
+      // Lấy email của nhân viên
+      const employeeEmails = await getEmployeeEmails();
+      
+      // Gửi email cho nhân viên chưa đăng ký
+      const result = await EmailScheduleService.sendReminderEmails(
+        unregisteredEmployees,
+        employeeEmails,
+        settings.dateRange
+      );
+      
+      if (result.success) {
+        showToast(`Đã gửi email nhắc nhở cho ${result.sentCount} nhân viên!`, 'success');
+        if (result.failedCount > 0) {
+          showToast(`${result.failedCount} email gửi thất bại`, 'warning');
+        }
+      } else {
+        showToast('Lỗi khi gửi email nhắc nhở!', 'error');
+      }
+      
+    } catch (error) {
+      console.error('Error sending reminder:', error);
+      showToast('Lỗi khi gửi email nhắc nhở!', 'error');
+    } finally {
+      setSendingReminder(false);
+    }
+  };
+
   return (
     <div className="admin-page">
       <div className="admin-header">
@@ -567,6 +615,10 @@ const AdminPage = ({ onLogout }) => {
 
           <button onClick={handleSaveSettings} disabled={loading || !hasChanges()} className={`save-btn ${hasChanges() ? '' : 'disabled'}`}>
             {loading ? 'Đang lưu...' : 'Lưu cài đặt'}
+          </button>
+
+          <button onClick={handleSendReminder} disabled={sendingReminder} className="mt-2 reminder-btn">
+            {sendingReminder ? 'Đang gửi nhắc nhở...' : 'Nhắc nhở đăng ký ca'}
           </button>
 
           <button onClick={() => navigate('/schedule-history')} className="history-btn">

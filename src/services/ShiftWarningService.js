@@ -21,6 +21,15 @@ class ShiftWarningService {
    * Lấy giới hạn cho một loại ca trong một ngày cụ thể
    */
   getShiftLimit(shiftType, dateStr) {
+    const date = new Date(dateStr);
+    const day = date.getDay(); // 0=CN, 1=T2, 2=T3, 3=T4, 4=T5, 5=T6, 6=T7
+    
+    if (shiftType === 'B') {
+      // Ca B: Thứ 3,5,7,CN được 2 người, còn lại 1 người
+      return (day === 2 || day === 4 || day === 6 || day === 0) ? 2 : 1; // T3, T5, T7, CN = 2 người
+    }
+    
+    // Giữ logic cũ cho ca A và C
     const isWeekendDay = this.isWeekend(dateStr);
     return this.shiftLimits[shiftType][isWeekendDay ? 'weekend' : 'weekday'];
   }

@@ -326,10 +326,11 @@ const EmployeeEmailManager = () => {
               </MDBBtn>
               
               <MDBBtn
-                onClick={handleTestEmail}
-                disabled={testingEmail || saving}
+                // onClick={handleTestEmail}
+                // disabled={testingEmail || saving}
                 color="warning"
                 className="px-4"
+                disabled={true}
               >
                 <MDBIcon fas icon="paper-plane" className="me-2" />
                 {testingEmail ? 'Đang gửi...' : 'Gửi thử'}

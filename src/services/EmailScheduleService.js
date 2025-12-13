@@ -8,6 +8,7 @@ class EmailScheduleService {
     this.serviceId = process.env.REACT_APP_EMAILJS_SERVICE_ID || 'your_service_id';
     this.scheduleTemplateId = process.env.REACT_APP_EMAILJS_SCHEDULE_TEMPLATE_ID || 'template_hubsnbi';
     this.registrationTemplateId = process.env.REACT_APP_EMAILJS_REGISTRATION_TEMPLATE_ID || 'template_registration';
+    this.reminderTemplateId = process.env.REACT_APP_EMAILJS_REMINDER_TEMPLATE_ID || 'template_reminder';
     this.publicKey = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || 'your_public_key';
     
     // Initialize EmailJS
@@ -263,6 +264,82 @@ class EmailScheduleService {
       </body>
       </html>
     `;
+  }
+/**
+   * Gửi email nhắc nhở đăng ký ca cho nhân viên chưa đăng ký
+   * @param {Array} unregisteredEmployees - Danh sách nhân viên chưa đăng ký
+   * @param {Object} employeeEmails - Email của nhân viên
+   * @param {Object} dateRange - Khoảng thời gian đăng ký
+   * @returns {Promise<Object>} - Kết quả gửi email
+   */
+  async sendReminderEmails(unregisteredEmployees, employeeEmails, dateRange) {
+    try {
+      console.log('Sending reminder emails...');
+      
+      let sentCount = 0;
+      let failedCount = 0;
+      const errors = [];
+      const sentEmployees = [];
+
+      // Gửi email cho từng nhân viên chưa đăng ký
+      for (const employeeName of unregisteredEmployees) {
+        const email = employeeEmails[employeeName];
+        
+        if (email && email.includes('@') && email.trim() !== '') {
+          try {
+            const templateParams = {
+              to_email: email,
+              to_name: employeeName,
+              subject: 'Nhắc nhở đăng ký ca làm việc',
+              date_range: dateRange.from && dateRange.to 
+                ? `${new Date(dateRange.from).toLocaleDateString('vi-VN')} - ${new Date(dateRange.to).toLocaleDateString('vi-VN')}`
+                : 'Tuần này',
+              registration_deadline: dateRange.to 
+                ? new Date(dateRange.to).toLocaleDateString('vi-VN')
+                : 'Cuối tuần',
+              current_year: new Date().getFullYear(),
+              staff_page_url: `${window.location.origin}/staff`
+            };
+
+            console.log(`Sending reminder email to ${employeeName} at ${email}`);
+
+            const response = await emailjs.send(this.serviceId, this.reminderTemplateId, templateParams);
+            
+            if (response.status === 200) {
+              sentCount++;
+              sentEmployees.push(employeeName);
+              console.log(`Reminder email sent to ${employeeName} at ${email}`);
+            } else {
+              failedCount++;
+              errors.push(`Failed to send to ${employeeName}: ${response.text}`);
+            }
+          } catch (error) {
+            failedCount++;
+            errors.push(`Failed to send to ${employeeName}: ${error.message}`);
+            console.error(`Failed to send reminder email to ${employeeName}:`, error);
+          }
+        } else {
+          console.warn(`Invalid email for ${employeeName}: ${email}`);
+          failedCount++;
+        }
+      }
+
+      return {
+        success: true,
+        sentCount,
+        failedCount,
+        errors,
+        sentEmployees,
+        message: `Đã gửi ${sentCount} email nhắc nhở, ${failedCount} thất bại`
+      };
+      
+    } catch (error) {
+      console.error('Error sending reminder emails:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
   }
 }
 

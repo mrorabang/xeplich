@@ -85,7 +85,7 @@
   grid-template-columns: 3fr 7fr;
   gap: 2rem;
   padding: 2rem;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 2rem auto;
   width: 100%;
   box-sizing: border-box;
@@ -833,6 +833,31 @@
   .date-separator {
     font-size: 0.8rem;
   }
+}
+
+.reminder-btn {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  color: white;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  /* font-size: 1rem; */
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  /* margin-bottom: 1rem; */
+  width: 100%;
+}
+
+.reminder-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(243, 156, 18, 0.3);
+}
+
+.reminder-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 .auto-allocate-btn {
