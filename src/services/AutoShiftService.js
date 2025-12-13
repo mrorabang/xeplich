@@ -1,4 +1,4 @@
-import { getRegistrations, updateRegistration, getAutoShiftConfig } from '../firebaseService';
+import { getRegistrations, updateRegistration, getAutoShiftConfig, getSettings } from '../firebaseService';
 
 class AutoShiftService {
   constructor() {
@@ -66,11 +66,27 @@ class AutoShiftService {
         console.error('Error loading auto shift config, dùng default:', cfgErr);
       }
 
-      // Lấy tất cả đăng ký (không cần filter approved nữa)
+      // Lấy tất cả đăng ký và settings
       const allRegistrations = await getRegistrations();
+      const settings = await getSettings();
       
       if (allRegistrations.length === 0) {
         return { success: true, message: 'Không có đăng ký nào để phân bổ' };
+      }
+
+      // Kiểm tra tổng số nhân viên đăng ký trong tuần so với tổng số nhân viên hiện tại
+      const registeredEmployees = new Set(allRegistrations.map(reg => reg.employeeId));
+      const currentEmployees = settings.employees || [];
+      
+      if (registeredEmployees.size !== currentEmployees.length) {
+        const unregisteredEmployees = currentEmployees.filter(emp => !registeredEmployees.has(emp.id));
+        const unregisteredNames = unregisteredEmployees.map(emp => emp.name).join(', ');
+        
+        return { 
+          success: false, 
+          error: `Có nhân viên chưa đăng ký !`,
+          unregisteredEmployees: unregisteredEmployees
+        };
       }
 
       // Đếm số lượng đăng ký cho mỗi ca

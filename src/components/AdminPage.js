@@ -317,7 +317,14 @@ const AdminPage = ({ onLogout }) => {
           setHasAllocatedSchedule(true);
         }
       } else {
-        showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
+        // Kiểm tra nếu là lỗi nhân viên chưa đăng ký
+        if (result.unregisteredEmployees && result.unregisteredEmployees.length > 0) {
+          showToast(result.error, 'error');
+          // Hiển thị danh sách nhân viên chưa đăng ký
+          console.log('Nhân viên chưa đăng ký:', result.unregisteredEmployees);
+        } else {
+          showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
+        }
       }
     } catch (error) {
       console.error('Error in auto allocation:', error);
