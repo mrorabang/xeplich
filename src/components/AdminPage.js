@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { saveSettings, getSettings, getRegistrations, saveScheduleByWeek, updateRegistrationStatus, checkShiftConflict, deleteRegistration, clearAllRegistrations, clearScheduleByWeek, getAutoShiftConfig, saveAutoShiftConfig, getEmployeeEmails } from '../firebaseService';
-import { useToast } from '../services/ToastService';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import AutoShiftService from '../services/AutoShiftService';
 import ShiftWarningService from '../services/ShiftWarningService';
 import FinalScheduleTable from './FinalScheduleTable';
@@ -9,8 +10,27 @@ import ViewModeToggle from './ViewModeToggle';
 import './AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
-  const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Toast helper functions
+  const showToast = (message, type = 'info') => {
+    const backgrounds = {
+      success: "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)",
+      error: "linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)",
+      warning: "linear-gradient(135deg, #f39c12 0%, #e67e22 100%)",
+      info: "linear-gradient(135deg, #3498db 0%, #2980b9 100%)"
+    };
+    
+    Toastify({
+      text: message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: backgrounds[type],
+      stopOnFocus: true
+    }).showToast();
+  };
+  
   const [settings, setSettings] = useState({
     isActive: false,
     dateRange: { from: '', to: '' },
@@ -134,11 +154,11 @@ const AdminPage = ({ onLogout }) => {
       const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 vì tính cả ngày đầu
 
       if (diffDays !== 7) {
-        toast.error(`Khoảng thời gian phải đủ 7 ngày! Hiện tại: ${diffDays} ngày`);
+        showToast(`Khoảng thời gian phải đủ 7 ngày! Hiện tại: ${diffDays} ngày`, 'error');
         return;
       }
     } else if (settings.dateRange.from || settings.dateRange.to) {
-      toast.error('Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc!');
+      showToast('Vui lòng chọn đầy đủ ngày bắt đầu và kết thúc!', 'error');
       return;
     }
 
@@ -157,7 +177,7 @@ const AdminPage = ({ onLogout }) => {
         // Chỉ xóa tất cả registrations của tuần cũ, giữ lại lịch chốt cũ
         await clearAllRegistrations();
         setRegistrations([]);
-        toast.success('Đã xóa dữ liệu cũ!');
+        showToast('Đã xóa dữ liệu cũ!', 'success');
       } else {
         setLoading(false);
         return;
@@ -168,9 +188,9 @@ const AdminPage = ({ onLogout }) => {
     setLoading(false);
     if (success) {
       setOriginalSettings(settings);
-      toast.success('Lưu cài đặt thành công!');
+      showToast('Lưu cài đặt thành công!', 'success');
     } else {
-      toast.error('Lỗi khi lưu cài đặt!');
+      showToast('Lỗi khi lưu cài đặt!', 'error');
     }
   };
 
@@ -243,9 +263,9 @@ const AdminPage = ({ onLogout }) => {
       const success = await deleteRegistration(registrationId);
       if (success) {
         setRegistrations(prev => prev.filter(reg => reg.id !== registrationId));
-        toast.success('Xóa đăng ký thành công!');
+        showToast('Xóa đăng ký thành công!', 'success');
       } else {
-        toast.error('Lỗi khi xóa đăng ký!');
+        showToast('Lỗi khi xóa đăng ký!', 'error');
       }
     }
   };
@@ -273,7 +293,7 @@ const AdminPage = ({ onLogout }) => {
 
   const handleAutoAllocate = async () => {
     if (registrations.length === 0) {
-      toast.warning('Không có đăng ký nào để phân bổ!');
+      showToast('Không có đăng ký nào để phân bổ!', 'warning');
       return;
     }
 
@@ -288,18 +308,18 @@ const AdminPage = ({ onLogout }) => {
         // Kiểm tra lại các ca còn thiếu sau khi phân bổ
         await checkShiftWarnings();
 
-        toast.success(result.message || `Đã phân bổ thành công ${result.allocatedCount} nhân viên!`);
+        showToast(result.message || `Đã phân bổ thành công ${result.allocatedCount} nhân viên!`, 'success');
 
         // Set state để hiển thị nút lưu lịch chốt
         if (result.allocatedCount > 0) {
           setHasAllocatedSchedule(true);
         }
       } else {
-        toast.error('Lỗi khi phân bổ ca: ' + result.error);
+        showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
       }
     } catch (error) {
       console.error('Error in auto allocation:', error);
-      toast.error('Lỗi khi phân bổ ca!');
+      showToast('Lỗi khi phân bổ ca!', 'error');
     } finally {
       setLoading(false);
     }
@@ -315,7 +335,7 @@ const AdminPage = ({ onLogout }) => {
       const registrationsWithShifts = allRegistrations.filter(reg => reg.shifts && reg.shifts.length > 0);
 
       if (registrationsWithShifts.length === 0) {
-        toast.warning('Không có đăng ký nào để lưu!');
+        showToast('Không có đăng ký nào để lưu!', 'warning');
         return;
       }
 
@@ -360,7 +380,7 @@ const AdminPage = ({ onLogout }) => {
       const success = await saveScheduleByWeek(settings.dateRange.from, mergedShifts);
       if (success) {
         setHasAllocatedSchedule(true);
-        toast.success(`Đã lưu lịch chốt thành công cho ${registrationsWithShifts.length} nhân viên!`);
+        showToast(`Đã lưu lịch chốt thành công cho ${registrationsWithShifts.length} nhân viên!`, 'success');
         
         // Không reload trang ngay lập tức, để người dùng có thể tiếp tục làm việc
         // setTimeout(() => {
@@ -369,7 +389,7 @@ const AdminPage = ({ onLogout }) => {
       }
     } catch (error) {
       console.error('Error creating schedule:', error);
-      toast.error('Lỗi khi tạo lịch chốt!');
+      showToast('Lỗi khi tạo lịch chốt!', 'error');
     } finally {
       setSavingSchedule(false);
     }
@@ -402,13 +422,13 @@ const AdminPage = ({ onLogout }) => {
     try {
       const success = await saveAutoShiftConfig(autoShiftConfig);
       if (success) {
-        toast.success('Lưu cấu hình phân bổ ca thành công!');
+        showToast('Lưu cấu hình phân bổ ca thành công!', 'success');
       } else {
-        toast.error('Lỗi khi lưu cấu hình phân bổ ca!');
+        showToast('Lỗi khi lưu cấu hình phân bổ ca!', 'error');
       }
     } catch (err) {
       console.error('Error saving auto shift config:', err);
-      toast.error('Lỗi khi lưu cấu hình phân bổ ca!');
+      showToast('Lỗi khi lưu cấu hình phân bổ ca!', 'error');
     } finally {
       setSavingAutoConfig(false);
     }
@@ -469,7 +489,7 @@ const AdminPage = ({ onLogout }) => {
                 const selectedDate = new Date(e.target.value);
                 // Kiểm tra xem có phải thứ 2 không
                 if (selectedDate.getDay() !== 1) {
-                  toast.error('Bắt buôc chọn ngày Thứ 2!');
+                  showToast('Bắt buôc chọn ngày Thứ 2!', 'error');
                   return;
                 }
                 // Tự động tính ngày Chủ nhật (thứ 2 + 6 ngày)

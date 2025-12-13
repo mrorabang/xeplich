@@ -100,6 +100,8 @@
   padding: 2rem;
   border-radius: 15px;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  max-width: 800px;
+  width: 100%;
 }
 
 .form-group {
@@ -207,6 +209,8 @@
   padding: 1rem;
   border-radius: 8px;
   margin-bottom: 2rem;
+  max-height: 120px;
+  overflow-y: auto;
 }
 
 .selected-shifts h4 {
@@ -218,6 +222,12 @@
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.shifts-list::after {
+  content: '';
+  flex-basis: 100%;
 }
 
 .shift-badge {
@@ -226,6 +236,9 @@
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: 0.9rem;
+  flex-basis: calc(33.333% - 0.34rem);
+  text-align: center;
+  box-sizing: border-box;
 }
 
 .submit-btn {
@@ -239,11 +252,30 @@
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
+  margin-bottom: 1rem;
+}
+
+.test-toast-btn {
+  width: 100%;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, #6c5ce7 0%, #5f3dc4 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
 }
 
 .submit-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(0, 184, 148, 0.3);
+}
+
+.test-toast-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
 }
 
 .error-message {

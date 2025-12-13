@@ -7,7 +7,7 @@ import ScheduleHistory from './components/ScheduleHistory';
 import ShiftAllocationManager from './components/ShiftAllocationManager';
 import ManualScheduleConverter from './components/ManualScheduleConverter';
 import EmployeeEmailManager from './components/EmployeeEmailManager';
-import { ToastProvider } from './services/ToastService';
+import 'toastify-js/src/toastify.css';
 import './App.css';
 
 function App() {
@@ -24,27 +24,25 @@ function App() {
   };
 
   return (
-    <ToastProvider>
-      <div className="App">
-        <Routes>
-          <Route path="/xeplich-admin" element={
-            isAdmin ? 
-            <AdminPage onLogout={handleAdminLogout} /> : 
-            <AdminLogin onLogin={handleAdminLogin} />
-          } />
-          <Route path="/" element={<StaffPage />} />
-          <Route path="/staff" element={<StaffPage />} />
-          <Route path="/schedule-history" element={<ScheduleHistory/>} />
-          <Route path="/shift-allocation" element={<ShiftAllocationManager/>} />
-          <Route path="/manual-schedule" element={<ManualScheduleConverter />} />
-          <Route path="/email-manager" element={
-            isAdmin ? 
-            <EmployeeEmailManager /> : 
-            <AdminLogin onLogin={handleAdminLogin} />
-          } />
-        </Routes>
-      </div>
-    </ToastProvider>
+    <div className="App">
+      <Routes>
+        <Route path="/xeplich-admin" element={
+          isAdmin ? 
+          <AdminPage onLogout={handleAdminLogout} /> : 
+          <AdminLogin onLogin={handleAdminLogin} />
+        } />
+        <Route path="/" element={<StaffPage />} />
+        <Route path="/staff" element={<StaffPage />} />
+        <Route path="/schedule-history" element={<ScheduleHistory/>} />
+        <Route path="/shift-allocation" element={<ShiftAllocationManager/>} />
+        <Route path="/manual-schedule" element={<ManualScheduleConverter />} />
+        <Route path="/email-manager" element={
+          isAdmin ? 
+          <EmployeeEmailManager /> : 
+          <AdminLogin onLogin={handleAdminLogin} />
+        } />
+      </Routes>
+    </div>
   );
 }
 

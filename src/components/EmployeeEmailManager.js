@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSettings, saveEmployeeEmails, getEmployeeEmails } from '../firebaseService';
-import { useToast } from '../services/ToastService';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import EmailScheduleService from '../services/EmailScheduleService';
 import {
   MDBContainer,
@@ -21,8 +22,26 @@ import {
 import './EmployeeEmailManager.css';
 
 const EmployeeEmailManager = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
+  
+  // Toast helper functions
+  const showToast = (message, type = 'info') => {
+    const backgrounds = {
+      success: "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)",
+      error: "linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)",
+      warning: "linear-gradient(135deg, #f39c12 0%, #e67e22 100%)",
+      info: "linear-gradient(135deg, #3498db 0%, #2980b9 100%)"
+    };
+    
+    Toastify({
+      text: message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: backgrounds[type],
+      stopOnFocus: true
+    }).showToast();
+  };
   const [settings, setSettings] = useState(null);
   const [employeeEmails, setEmployeeEmails] = useState({});
   const [loading, setLoading] = useState(true);
@@ -64,7 +83,7 @@ const EmployeeEmailManager = () => {
       setLoading(false);
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Lỗi khi tải dữ liệu!');
+      showToast('Lỗi khi tải dữ liệu!', 'error');
       setLoading(false);
     }
   };
@@ -81,13 +100,13 @@ const EmployeeEmailManager = () => {
     try {
       const success = await saveEmployeeEmails(employeeEmails);
       if (success) {
-        toast.success('Lưu email nhân viên thành công!');
+        showToast('Lưu email nhân viên thành công!', 'success');
       } else {
-        toast.error('Lỗi khi lưu email nhân viên!');
+        showToast('Lỗi khi lưu email nhân viên!', 'error');
       }
     } catch (error) {
       console.error('Error saving emails:', error);
-      toast.error('Lỗi khi lưu email nhân viên!');
+      showToast('Lỗi khi lưu email nhân viên!', 'error');
     } finally {
       setSaving(false);
     }
@@ -100,7 +119,7 @@ const EmployeeEmailManager = () => {
       const employeesWithEmail = Object.entries(employeeEmails).filter(([name, email]) => email && email.trim() && email.includes('@'));
       
       if (employeesWithEmail.length === 0) {
-        toast.error('Chưa có nhân viên nào có email hợp lệ!');
+        showToast('Chưa có nhân viên nào có email hợp lệ!', 'error');
         return;
       }
 
@@ -141,14 +160,14 @@ const EmployeeEmailManager = () => {
         const namesText = employeeNames.length > 0 
           ? employeeNames.join(', ') 
           : '0 nhân viên';
-        toast.success(`Test email thành công! Đã gửi cho: ${namesText}`);
+        showToast(`Test email thành công! Đã gửi cho: ${namesText}`, 'success');
       } else {
-        toast.error(result.error || 'Test email thất bại!');
+        showToast(result.error || 'Test email thất bại!', 'error');
       }
       
     } catch (error) {
       console.error('Error testing email:', error);
-      toast.error('Lỗi khi test email!');
+      showToast('Lỗi khi test email!', 'error');
     } finally {
       setTestingEmail(false);
     }
@@ -180,7 +199,7 @@ const EmployeeEmailManager = () => {
     // });
     
     setEmployeeEmails(autoEmails);
-    toast.info('Đã tự động điền email theo tên nhân viên!');
+    showToast('Đã tự động điền email theo tên nhân viên!', 'info');
   };
 
   const handleClearAll = () => {

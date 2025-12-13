@@ -2,12 +2,31 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRegistrations } from '../firebaseService';
 import ShiftAllocationService from '../services/ShiftAllocationService';
-import { useToast } from '../services/ToastService';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import './ShiftAllocationManager.css';
 
 const ShiftAllocationManager = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  
+  // Toast helper functions
+  const showToast = (message, type = 'info') => {
+    const backgrounds = {
+      success: "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)",
+      error: "linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)",
+      warning: "linear-gradient(135deg, #f39c12 0%, #e67e22 100%)",
+      info: "linear-gradient(135deg, #3498db 0%, #2980b9 100%)"
+    };
+    
+    Toastify({
+      text: message,
+      duration: 3000,
+      gravity: "top",
+      position: "right",
+      backgroundColor: backgrounds[type],
+      stopOnFocus: true
+    }).showToast();
+  };
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [allocating, setAllocating] = useState(false);
@@ -29,7 +48,7 @@ const ShiftAllocationManager = () => {
       setRegistrations(approvedRegistrations);
     } catch (error) {
       console.error('Error loading registrations:', error);
-      toast.error('Lỗi khi tải danh sách đăng ký!');
+      showToast('Lỗi khi tải danh sách đăng ký!', 'error');
     } finally {
       setLoading(false);
     }
@@ -37,7 +56,7 @@ const ShiftAllocationManager = () => {
 
   const handleAllocateShifts = async () => {
     if (registrations.length === 0) {
-      toast.warning('Không có đăng ký nào để phân bổ!');
+      showToast('Không có đăng ký nào để phân bổ!', 'warning');
       return;
     }
 
@@ -48,13 +67,13 @@ const ShiftAllocationManager = () => {
       if (result.success) {
         setAllocationStats(result.stats);
         setRegistrations(result.registrations);
-        toast.success('Phân bổ ca làm việc thành công!');
+        showToast('Phân bổ ca làm việc thành công!', 'success');
       } else {
-        toast.error('Lỗi khi phân bổ ca: ' + result.error);
+        showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
       }
     } catch (error) {
       console.error('Error allocating shifts:', error);
-      toast.error('Lỗi khi phân bổ ca!');
+      showToast('Lỗi khi phân bổ ca!', 'error');
     } finally {
       setAllocating(false);
     }

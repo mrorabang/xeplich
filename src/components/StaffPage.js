@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSettings, saveRegistration, getRegistrations } from '../firebaseService';
 import { sendRegistrationNotification } from '../services/EmailService';
-import { useToast } from '../services/ToastService';
+import Toastify from 'toastify-js';
+import 'toastify-js/src/toastify.css';
 import './StaffPage.css';
 
 const StaffPage = () => {
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [settings, setSettings] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -117,17 +117,17 @@ const StaffPage = () => {
       }
     }
     
-    // Kiểm tra tối đa 1 ngày nghỉ
-    if (restDays > 1) {
-      setError('Bạn chỉ được nghỉ tối đa 1 ngày trong tuần!');
-      return false;
-    }
+    // Bỏ kiểm tra tối đa 1 ngày nghỉ - cho phép nghỉ thoải mái
+    // if (restDays > 1) {
+    //   setError('Bạn chỉ được nghỉ tối đa 1 ngày trong tuần!');
+    //   return false;
+    // }
     
-    // Kiểm tra phải làm ít nhất 6 ngày
-    if (workingDays < 6) {
-      setError('Bạn phải làm việc ít nhất 6 ngày trong tuần!');
-      return false;
-    }
+    // Bỏ kiểm tra phải làm ít nhất 6 ngày - cho phép linh hoạt
+    // if (workingDays < 6) {
+    //   setError('Bạn phải làm việc ít nhất 6 ngày trong tuần!');
+    //   return false;
+    // }
     
     return true;
   };
@@ -176,7 +176,14 @@ const StaffPage = () => {
     
     const id = await saveRegistration(registration);
     if (id) {
-      toast.success('Đăng ký ca làm việc thành công!');
+      Toastify({
+        text: 'Đăng ký ca làm việc thành công!',
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "linear-gradient(135deg, #27ae60 0%, #2ecc71 100%)",
+        stopOnFocus: true
+      }).showToast();
       
       // Gửi email thông báo cho admin
       sendRegistrationNotification(employeeName, selectedShifts);
@@ -185,7 +192,14 @@ const StaffPage = () => {
       setEmployeeName('');
       initializeShifts();
     } else {
-      toast.error('Đăng ký thất bại, vui lòng thử lại!');
+      Toastify({
+        text: 'Đăng ký thất bại, vui lòng thử lại!',
+        duration: 3000,
+        gravity: "top",
+        position: "right",
+        backgroundColor: "linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)",
+        stopOnFocus: true
+      }).showToast();
     }
   };
 
@@ -404,7 +418,7 @@ const StaffPage = () => {
           </div>
 
           <div className="shifts-table">
-            <h3>Chọn ca làm việc (mỗi ngày 1-3 ca, tối đa 1 ngày nghỉ/tuần)</h3>
+            <h3>Chọn ca làm việc (mỗi ngày 1-3 ca)</h3>
             <table>
               <thead>
                 <tr>
