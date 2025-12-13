@@ -8,7 +8,7 @@ class EmailScheduleService {
     this.serviceId = process.env.REACT_APP_EMAILJS_SERVICE_ID || 'your_service_id';
     this.scheduleTemplateId = process.env.REACT_APP_EMAILJS_SCHEDULE_TEMPLATE_ID || 'template_hubsnbi';
     this.registrationTemplateId = process.env.REACT_APP_EMAILJS_REGISTRATION_TEMPLATE_ID || 'template_registration';
-    this.reminderTemplateId = process.env.REACT_APP_EMAILJS_REMINDER_TEMPLATE_ID || 'template_reminder';
+    this.reminderTemplateId = process.env.REACT_APP_EMAILJS_REMINDER_TEMPLATE_ID || 'template_hubsnbi';
     this.publicKey = process.env.REACT_APP_EMAILJS_PUBLIC_KEY || 'your_public_key';
     
     // Initialize EmailJS
