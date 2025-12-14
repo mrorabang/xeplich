@@ -307,9 +307,6 @@ const AdminPage = ({ onLogout }) => {
         // Tải lại danh sách đăng ký
         await loadRegistrations();
 
-        // Kiểm tra lại các ca còn thiếu sau khi phân bổ
-        await checkShiftWarnings();
-
         showToast(result.message || `Đã phân bổ thành công ${result.allocatedCount} nhân viên!`, 'success');
 
         // Set state để hiển thị nút lưu lịch chốt
@@ -317,14 +314,7 @@ const AdminPage = ({ onLogout }) => {
           setHasAllocatedSchedule(true);
         }
       } else {
-        // Kiểm tra nếu là lỗi nhân viên chưa đăng ký
-        if (result.unregisteredEmployees && result.unregisteredEmployees.length > 0) {
-          showToast(result.error, 'error');
-          // Hiển thị danh sách nhân viên chưa đăng ký
-          console.log('Nhân viên chưa đăng ký:', result.unregisteredEmployees);
-        } else {
-          showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
-        }
+        showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
       }
     } catch (error) {
       console.error('Error in auto allocation:', error);
@@ -630,6 +620,10 @@ const AdminPage = ({ onLogout }) => {
 
           <button onClick={() => navigate('/schedule-history')} className="history-btn">
             Lịch sử lịch làm
+          </button>
+
+          <button onClick={() => navigate('/registration-history')} className="registration-history-btn">
+            Lịch sử đăng ký
           </button>
 
           <button onClick={() => navigate('/email-manager')} className="email-manager-btn">

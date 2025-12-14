@@ -42,28 +42,13 @@ class ShiftAllocationService {
   }
 
   /**
-   * Phân bổ ca làm việc thông minh
+   * Phân bổ ca làm việc tự do (không giới hạn)
    * @param {Array} registrations - Danh sách đăng ký
-   * @param {Object} shiftLimits - Giới hạn mỗi ca (tùy chọn)
    * @returns {Array} Danh sách đăng ký đã được phân bổ
    */
-  async allocateShifts(registrations, shiftLimits = null) {
-    const limits = shiftLimits || this.defaultLimits;
-    
-    // Đếm số lượng đăng ký cho mỗi ca
-    const shiftCounts = this.countShiftRegistrations(registrations);
-    
-    // Tìm các ca vượt quá giới hạn
-    const overloadedShifts = this.findOverloadedShifts(shiftCounts, limits);
-    
-    // Xử lý phân bổ cho các ca vượt quá giới hạn
-    const processedRegistrations = await this.processOverloadedShifts(
-      registrations, 
-      overloadedShifts, 
-      limits
-    );
-    
-    return processedRegistrations;
+  async allocateShifts(registrations) {
+    // Phân bổ tự do - giữ nguyên tất cả đăng ký
+    return registrations;
   }
 
   /**
@@ -252,17 +237,16 @@ class ShiftAllocationService {
   }
 
   /**
-   * Áp dụng phân bổ và cập nhật vào Firebase
+   * Áp dụng phân bổ tự do và cập nhật vào Firebase
    */
-  async applyAllocation(registrations, shiftLimits = null) {
+  async applyAllocation(registrations) {
     try {
-      // Phân bổ thông minh
-      const allocatedRegistrations = await this.allocateShifts(registrations, shiftLimits);
+      // Phân bổ tự do - giữ nguyên đăng ký
+      const allocatedRegistrations = await this.allocateShifts(registrations);
       
-      // Cập nhật vào Firebase
+      // Cập nhật vào Firebase - chỉ đánh dấu đã phân bổ
       for (const reg of allocatedRegistrations) {
         await updateRegistration(reg.id, {
-          shifts: reg.shifts,
           allocated: true,
           allocatedAt: new Date().toISOString()
         });

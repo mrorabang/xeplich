@@ -62,12 +62,12 @@ const ShiftAllocationManager = () => {
 
     setAllocating(true);
     try {
-      const result = await ShiftAllocationService.applyAllocation(registrations, shiftLimits);
+      const result = await ShiftAllocationService.applyAllocation(registrations);
       
       if (result.success) {
         setAllocationStats(result.stats);
         setRegistrations(result.registrations);
-        showToast('Phân bổ ca làm việc thành công!', 'success');
+        showToast('Phân bổ ca làm việc tự do thành công!', 'success');
       } else {
         showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
       }
@@ -129,59 +129,14 @@ const ShiftAllocationManager = () => {
       </div>
 
       <div className="allocation-content">
-        {/* Cấu hình giới hạn ca */}
-        <div className="limits-section">
-          <h3>Giới hạn số lượng nhân viên mỗi ca</h3>
-          <div className="limits-grid">
-            <div className="limit-item">
-              <label>Ca sáng (A):</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={shiftLimits.A}
-                onChange={(e) => handleLimitChange('A', e.target.value)}
-              />
-            </div>
-            <div className="limit-item">
-              <label>Ca chiều (B):</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={shiftLimits.B}
-                onChange={(e) => handleLimitChange('B', e.target.value)}
-              />
-            </div>
-            <div className="limit-item">
-              <label>Ca tối (C):</label>
-              <input
-                type="number"
-                min="1"
-                max="10"
-                value={shiftLimits.C}
-                onChange={(e) => handleLimitChange('C', e.target.value)}
-              />
-            </div>
-          </div>
+        {/* Thông tin về phân bổ tự do */}
+        <div className="info-section">
+          <h3>🔓 Phân bổ tự do</h3>
+          <p className="info-text">
+            Chế độ phân bổ tự do - không giới hạn số lượng nhân viên cho mỗi ca.
+            Tất cả đăng ký sẽ được giữ nguyên và chỉ cần xác nhận phân bổ.
+          </p>
         </div>
-
-        {/* Thông tin vượt quá giới hạn */}
-        {overloadInfo.length > 0 && (
-          <div className="overload-section">
-            <h3>⚠️ Các ca vượt quá giới hạn</h3>
-            <div className="overload-list">
-              {overloadInfo.map((info, index) => (
-                <div key={index} className="overload-item">
-                  <span>{info.date} - Ca {info.shift}</span>
-                  <span className="overload-count">
-                    {info.registered}/{info.limit} (vượt {info.excess})
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Thống kê hiện tại */}
         <div className="stats-section">
@@ -243,7 +198,7 @@ const ShiftAllocationManager = () => {
             disabled={allocating || registrations.length === 0}
             className="allocate-btn"
           >
-            {allocating ? 'Đang phân bổ...' : '🤖 Phân bổ ca thông minh'}
+            {allocating ? 'Đang phân bổ...' : '✅ Xác nhận phân bổ tự do'}
           </button>
         </div>
       </div>

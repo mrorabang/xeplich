@@ -44,7 +44,8 @@
 .limits-section,
 .overload-section,
 .stats-section,
-.result-section {
+.result-section,
+.info-section {
   background: white;
   padding: 1.5rem;
   border-radius: 12px;
@@ -55,10 +56,18 @@
 .limits-section h3,
 .overload-section h3,
 .stats-section h3,
-.result-section h3 {
+.result-section h3,
+.info-section h3 {
   color: #2c3e50;
   margin: 0 0 1rem 0;
   font-size: 1.25rem;
+}
+
+.info-text {
+  color: #495057;
+  line-height: 1.6;
+  margin: 0;
+  font-size: 1rem;
 }
 
 .limits-grid {

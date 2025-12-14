@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { getSettings, saveRegistration, getRegistrations } from '../firebaseService';
+import { getSettings, saveRegistration, getRegistrations, addRegistrationToHistory } from '../firebaseService';
 import { sendRegistrationNotification } from '../services/EmailService';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
@@ -176,6 +176,11 @@ const StaffPage = () => {
     
     const id = await saveRegistration(registration);
     if (id) {
+      // Đồng thời lưu vào lịch sử đăng ký
+      if (settings && settings.dateRange && settings.dateRange.from) {
+        await addRegistrationToHistory(settings.dateRange.from, registration);
+      }
+
       Toastify({
         text: 'Đăng ký ca làm việc thành công!',
         duration: 3000,

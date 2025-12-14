@@ -67,39 +67,39 @@ const ScheduleHistory = () => {
   };
 
   const handleSendSchedule = async (scheduleData, dateRange, index) => {
-    setSendingSchedule(true);
-    try {
-      // Lấy element của lịch cần chụp
-      const scheduleElement = document.querySelector(`#history-schedule-${index}`);
+    // setSendingSchedule(true);
+    // try {
+    //   // Lấy element của lịch cần chụp
+    //   const scheduleElement = document.querySelector(`#history-schedule-${index}`);
       
-      if (!scheduleElement) {
-        showToast('Không tìm thấy element lịch để chụp!', 'error');
-        return;
-      }
+    //   if (!scheduleElement) {
+    //     showToast('Không tìm thấy element lịch để chụp!', 'error');
+    //     return;
+    //   }
 
-      // Sử dụng EmailScheduleService để gửi
-      const result = await EmailScheduleService.sendScheduleWithImage(
-        scheduleElement,
-        scheduleData,
-        dateRange
-      );
+    //   // Sử dụng EmailScheduleService để gửi
+    //   const result = await EmailScheduleService.sendScheduleWithImage(
+    //     scheduleElement,
+    //     scheduleData,
+    //     dateRange
+    //   );
 
-      if (result.success) {
-        const employeeNames = result.sentEmployees || [];
-        const namesText = employeeNames.length > 0 
-          ? employeeNames.join(', ') 
-          : '0 nhân viên';
-        showToast(`Đã gửi lịch làm việc cho: ${namesText}`, 'success');
-      } else {
-        showToast(result.error || 'Lỗi khi gửi lịch làm việc!', 'error');
-      }
+    //   if (result.success) {
+    //     const employeeNames = result.sentEmployees || [];
+    //     const namesText = employeeNames.length > 0 
+    //       ? employeeNames.join(', ') 
+    //       : '0 nhân viên';
+    //     showToast(`Đã gửi lịch làm việc cho: ${namesText}`, 'success');
+    //   } else {
+    //     showToast(result.error || 'Lỗi khi gửi lịch làm việc!', 'error');
+    //   }
       
-    } catch (error) {
-      console.error('Error sending schedule:', error);
-      showToast('Lỗi khi gửi lịch làm việc!', 'error');
-    } finally {
-      setSendingSchedule(false);
-    }
+    // } catch (error) {
+    //   console.error('Error sending schedule:', error);
+    //   showToast('Lỗi khi gửi lịch làm việc!', 'error');
+    // } finally {
+    //   setSendingSchedule(false);
+    // }
   };
 
   if (loading) {

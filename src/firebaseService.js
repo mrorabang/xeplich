@@ -12,6 +12,143 @@ export const saveSettings = async (settings) => {
   }
 };
 
+// Registration History collection - lưu lịch sử đăng ký gốc
+export const saveRegistrationHistory = async (weekData) => {
+  try {
+    const historyRef = doc(db, 'registrationHistory', weekData.weekId);
+    await setDoc(historyRef, weekData);
+    return true;
+  } catch (error) {
+    console.error('Error saving registration history:', error);
+    return false;
+  }
+};
+
+export const getRegistrationHistory = async () => {
+  try {
+    const historyCollectionRef = collection(db, 'registrationHistory');
+    const weekSnapshots = await getDocs(query(historyCollectionRef, orderBy('weekId', 'desc')));
+    
+    const historyData = [];
+
+    for (const weekDoc of weekSnapshots.docs) {
+      const weekId = weekDoc.id;
+
+      const registrationsSubCollectionRef = collection(db, 'registrationHistory', weekId, 'registrations');
+      const registrationSnapshots = await getDocs(registrationsSubCollectionRef);
+      
+      const registrations = registrationSnapshots.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      historyData.push({
+        id: weekId,
+        weekId: weekId,
+        registrations: registrations,
+      });
+    }
+    
+    return historyData;
+
+  } catch (error) {
+    console.error('Error getting registration history:', error);
+    return [];
+  }
+};
+
+// Thêm một đăng ký vào lịch sử của tuần
+export const addRegistrationToHistory = async (weekId, registration) => {
+  try {
+    // 1. Tham chiếu đến document của tuần
+    const weekDocRef = doc(db, 'registrationHistory', weekId);
+
+    // 2. Ghi/Cập nhật thông tin của tuần đó (ví dụ: ngày bắt đầu), merge: true để không ghi đè
+    await setDoc(weekDocRef, { weekId: weekId }, { merge: true });
+
+    // 3. Kiểm tra xem nhân viên đã có đăng ký trong tuần chưa
+    const registrationHistoryRef = doc(weekDocRef, 'registrations', registration.employeeName);
+    const existingDoc = await getDoc(registrationHistoryRef);
+    
+    if (existingDoc.exists()) {
+      // Nếu đã có, merge các shifts mới vào shifts cũ
+      const existingData = existingDoc.data();
+      const existingShifts = existingData.shifts || [];
+      
+      // Merge shifts: loại bỏ trùng lặp cùng ngày và ca
+      const allShifts = [...existingShifts, ...(registration.shifts || [])];
+      const uniqueShifts = allShifts.filter((shift, index, self) => 
+        index === self.findIndex((s) => s.date === shift.date && s.shift === shift.shift)
+      );
+      
+      // Cập nhật lại với shifts đã merge
+      await setDoc(registrationHistoryRef, {
+        ...registration,
+        shifts: uniqueShifts,
+        timestamp: new Date().toISOString() // Cập nhật timestamp mới nhất
+      });
+    } else {
+      // Nếu chưa có, thêm mới
+      await setDoc(registrationHistoryRef, registration);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error adding registration to history:', error);
+    return false;
+  }
+};
+
+// Xóa toàn bộ lịch sử đăng ký
+export const clearRegistrationHistory = async () => {
+  try {
+    const historyCollectionRef = collection(db, 'registrationHistory');
+    const snapshot = await getDocs(historyCollectionRef);
+    
+    // Xóa tất cả documents trong collection
+    const deletePromises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+    await Promise.all(deletePromises);
+    
+    return true;
+  } catch (error) {
+    console.error('Error clearing registration history:', error);
+    return false;
+  }
+};
+
+// Xóa lịch sử đăng ký của một tuần cụ thể
+export const deleteRegistrationHistoryByWeek = async (weekId) => {
+  try {
+    const weekDocRef = doc(db, 'registrationHistory', weekId);
+    await deleteDoc(weekDocRef);
+    return true;
+  } catch (error) {
+    console.error('Error deleting registration history by week:', error);
+    return false;
+  }
+};
+
+export const getRegistrationHistoryByWeek = async (weekId) => {
+  try {
+    // Tham chiếu đến subcollection 'registrations' của tuần
+    const registrationsRef = collection(db, 'registrationHistory', weekId, 'registrations');
+    const snapshot = await getDocs(registrationsRef);
+    
+    if (snapshot.empty) {
+      return null;
+    }
+
+    // Lấy tất cả các documents từ subcollection
+    const registrations = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+    // Trả về dữ liệu theo format tương tự cấu trúc cũ để không phá vỡ UI
+    return {
+      id: weekId,
+      registrations: registrations
+    };
+  } catch (error) {
+    console.error('Error getting registration history by week:', error);
+    return null;
+  }
+};
+
 // Auto shift config (cấu hình phân bổ ca)
 export const saveAutoShiftConfig = async (config) => {
   try {

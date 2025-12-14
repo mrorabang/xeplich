@@ -7,6 +7,7 @@ import ScheduleHistory from './components/ScheduleHistory';
 import ShiftAllocationManager from './components/ShiftAllocationManager';
 import ManualScheduleConverter from './components/ManualScheduleConverter';
 import EmployeeEmailManager from './components/EmployeeEmailManager';
+import RegistrationHistory from './components/RegistrationHistory';
 import 'toastify-js/src/toastify.css';
 import './App.css';
 
@@ -34,6 +35,7 @@ function App() {
         <Route path="/" element={<StaffPage />} />
         <Route path="/staff" element={<StaffPage />} />
         <Route path="/schedule-history" element={<ScheduleHistory/>} />
+        <Route path="/registration-history" element={<RegistrationHistory/>} />
         <Route path="/shift-allocation" element={<ShiftAllocationManager/>} />
         <Route path="/manual-schedule" element={<ManualScheduleConverter />} />
         <Route path="/email-manager" element={
