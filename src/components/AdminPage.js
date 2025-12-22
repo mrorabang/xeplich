@@ -272,6 +272,24 @@ const AdminPage = ({ onLogout }) => {
     }
   };
 
+  const handleClearAllRegistrations = async () => {
+    if (window.confirm('Bạn có chắc muốn xóa TẤT CẢ lịch đăng ký của nhân viên? Hành động này không thể hoàn tác!')) {
+      try {
+        const success = await clearAllRegistrations();
+        if (success) {
+          setRegistrations([]);
+          setHasAllocatedSchedule(false);
+          showToast('Đã xóa tất cả lịch đăng ký!', 'success');
+        } else {
+          showToast('Lỗi khi xóa tất cả đăng ký!', 'error');
+        }
+      } catch (error) {
+        console.error('Error clearing all registrations:', error);
+        showToast('Lỗi khi xóa tất cả đăng ký!', 'error');
+      }
+    }
+  };
+
   // Kiểm tra có thay đổi settings không
   const hasChanges = () => {
     if (!originalSettings) return false;
@@ -649,6 +667,15 @@ const AdminPage = ({ onLogout }) => {
               >
                 {refreshLoading ? 'Đang tải...' : 'Refresh'}
               </button>
+              {registrations.length > 0 && (
+                <button
+                  onClick={handleClearAllRegistrations}
+                  className="clear-all-btn"
+                  style={{ backgroundColor: '#dc3545', color: 'white' }}
+                >
+                  Xóa tất cả
+                </button>
+              )}
               {hasAllocatedSchedule && (
                 <button
                   onClick={createScheduleFromAllocations}

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getRegistrations } from '../firebaseService';
 import ShiftAllocationService from '../services/ShiftAllocationService';
+import AIEnhancedShiftService from '../services/AIEnhancedShiftService';
+import OpenAIShiftService from '../services/OpenAIShiftService';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import './ShiftAllocationManager.css';
@@ -31,6 +33,10 @@ const ShiftAllocationManager = () => {
   const [loading, setLoading] = useState(true);
   const [allocating, setAllocating] = useState(false);
   const [allocationStats, setAllocationStats] = useState(null);
+  const [aiMode, setAiMode] = useState(false);
+  const [aiMetrics, setAiMetrics] = useState(null);
+  const [aiInsights, setAiInsights] = useState(null);
+  const [allocationMode, setAllocationMode] = useState('auto'); // 'auto', 'enhanced', 'openai'
   const [shiftLimits, setShiftLimits] = useState({
     'A': 3,
     'B': 3,
@@ -62,12 +68,44 @@ const ShiftAllocationManager = () => {
 
     setAllocating(true);
     try {
-      const result = await ShiftAllocationService.applyAllocation(registrations);
+      let result;
+      
+      if (allocationMode === 'openai') {
+        // Sử dụng OpenAI Service
+        result = await OpenAIShiftService.aiAllocateShifts({
+          prioritizeFairness: true,
+          maxShiftsPerEmployee: 5,
+          optimizeFor: 'balanced'
+        });
+        
+        if (result.success) {
+          setAiInsights(result.aiInsights);
+          showToast('Phân bổ ca bằng OpenAI thành công!', 'success');
+        }
+      } else if (allocationMode === 'enhanced') {
+        // Sử dụng AI Enhanced Shift Service
+        result = await AIEnhancedShiftService.aiAllocateShifts({
+          prioritizeFairness: true,
+          maxShiftsPerEmployee: 5,
+          optimizeFor: 'balanced'
+        });
+        
+        if (result.success) {
+          setAiMetrics(result.aiMetrics);
+          showToast('Phân bổ ca bằng AI Enhanced thành công!', 'success');
+        }
+      } else {
+        // Sử dụng service hiện tại
+        result = await ShiftAllocationService.applyAllocation(registrations);
+        
+        if (result.success) {
+          showToast('Phân bổ ca làm việc tự do thành công!', 'success');
+        }
+      }
       
       if (result.success) {
         setAllocationStats(result.stats);
-        setRegistrations(result.registrations);
-        showToast('Phân bổ ca làm việc tự do thành công!', 'success');
+        setRegistrations(result.registrations || registrations);
       } else {
         showToast('Lỗi khi phân bổ ca: ' + result.error, 'error');
       }

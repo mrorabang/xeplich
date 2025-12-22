@@ -85,7 +85,11 @@ const RegistrationHistory = () => {
     if (shifts && Array.isArray(shifts)) {
       shifts.forEach(shift => {
         const dateKey = shift.date;
-        shiftsByDay[dateKey] = shift;
+        // Store all shifts for each date (in case of multiple shifts per day)
+        if (!shiftsByDay[dateKey]) {
+          shiftsByDay[dateKey] = [];
+        }
+        shiftsByDay[dateKey].push(shift);
       });
     }
     
@@ -195,17 +199,20 @@ const RegistrationHistory = () => {
                       <tr key={empIndex}>
                         <td className="employee-name">{registration.employeeName}</td>
                         {generateWeekDays().map((day, dayIndex) => {
-                          const shift = shiftsByDay[day.fullDate];
+                          const dayShifts = shiftsByDay[day.fullDate] || [];
+                          const hasShiftA = dayShifts.some(s => s.shift === 'A');
+                          const hasShiftB = dayShifts.some(s => s.shift === 'B');
+                          const hasShiftC = dayShifts.some(s => s.shift === 'C');
                           return (
                             <React.Fragment key={dayIndex}>
                               <td className="shift-cell">
-                                {shift && shift.shift === 'A' ? 'x' : ''}
+                                {hasShiftA ? 'x' : ''}
                               </td>
                               <td className="shift-cell">
-                                {shift && shift.shift === 'B' ? 'x' : ''}
+                                {hasShiftB ? 'x' : ''}
                               </td>
                               <td className="shift-cell">
-                                {shift && shift.shift === 'C' ? 'x' : ''}
+                                {hasShiftC ? 'x' : ''}
                               </td>
                             </React.Fragment>
                           );
