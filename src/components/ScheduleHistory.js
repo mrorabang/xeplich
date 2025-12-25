@@ -5,7 +5,7 @@ import FinalScheduleTable from './FinalScheduleTable';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
 import EmailScheduleService from '../services/EmailScheduleService';
-import './ScheduleHistory.css';
+import '../css/ScheduleHistory.css';
 
 const ScheduleHistory = () => {
   const navigate = useNavigate();

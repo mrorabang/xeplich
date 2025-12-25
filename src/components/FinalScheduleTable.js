@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import html2canvas from 'html2canvas';
-import './FinalScheduleTable.css';
+import '../css/FinalScheduleTable.css';
 
 const FinalScheduleTable = ({ registrations, dateRange, scheduleData }) => {
   const tableRef = useRef();

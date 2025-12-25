@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { getSchedules } from '../firebaseService';
-import './ScheduleTable.css';
+import '../css/ScheduleTable.css';
 
 const ScheduleTable = ({ refreshKey, onRefresh }) => {
   const [schedules, setSchedules] = useState([]);

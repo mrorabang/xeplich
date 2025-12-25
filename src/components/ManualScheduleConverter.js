@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getSettings } from '../firebaseService';
 import html2canvas from 'html2canvas';
-import './StaffPage.css';
-import './FinalScheduleTable.css';
+import '../css/StaffPage.css';
+import '../css/FinalScheduleTable.css';
 
 const shiftHours = {
   A: 6, // 6h30-12h30

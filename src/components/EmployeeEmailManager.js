@@ -19,7 +19,7 @@ import {
   MDBInput,
   MDBIcon
 } from 'mdb-react-ui-kit';
-import './EmployeeEmailManager.css';
+import '../css/EmployeeEmailManager.css';
 
 const EmployeeEmailManager = () => {
   const navigate = useNavigate();

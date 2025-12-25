@@ -8,7 +8,7 @@ import ShiftWarningService from '../services/ShiftWarningService';
 import FinalScheduleTable from './FinalScheduleTable';
 import ViewModeToggle from './ViewModeToggle';
 import EmailScheduleService from '../services/EmailScheduleService';
-import './AdminPage.css';
+import '../css/AdminPage.css';
 
 const AdminPage = ({ onLogout }) => {
   const navigate = useNavigate();

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MDBContainer, MDBCard, MDBCardBody, MDBCardTitle, MDBRow, MDBCol, MDBBtn, MDBSpinner, MDBBadge, MDBInput } from 'mdb-react-ui-kit';
 import { getRegistrationHistory, saveRegistrationHistory, clearRegistrationHistory } from '../firebaseService';
-import './RegistrationHistory.css';
+import '../css/RegistrationHistory.css';
 
 const RegistrationHistory = () => {
   const [historyData, setHistoryData] = useState([]);

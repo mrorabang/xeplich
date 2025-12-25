@@ -6,7 +6,7 @@ import AIEnhancedShiftService from '../services/AIEnhancedShiftService';
 import OpenAIShiftService from '../services/OpenAIShiftService';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import './ShiftAllocationManager.css';
+import '../css/ShiftAllocationManager.css';
 
 const ShiftAllocationManager = () => {
   const navigate = useNavigate();

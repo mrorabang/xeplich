@@ -4,7 +4,7 @@ import { getSettings, saveRegistration, getRegistrations, addRegistrationToHisto
 import { sendRegistrationNotification } from '../services/EmailService';
 import Toastify from 'toastify-js';
 import 'toastify-js/src/toastify.css';
-import './StaffPage.css';
+import '../css/StaffPage.css';
 
 const StaffPage = () => {
   const navigate = useNavigate();
